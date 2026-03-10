@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:8.0
+    container_name: invest-tracker-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=invest-tracker
+    networks:
+      - app-network
+
+  server:
+    build: ./server
+    container_name: invest-tracker-server
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongodb
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - MONGODB_URI=mongodb://mongodb:27017/invest-tracker
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - JWT_EXPIRES_IN=7d
+      - EMAIL_SERVICE=smtp.qq.com
+      - EMAIL_PORT=465
+      - EMAIL_USER=your-email@qq.com
+      - EMAIL_PASS=your-email-password
+      - CLIENT_URL=http://localhost:5173
+    networks:
+      - app-network
+
+  client:
+    build: ./client
+    container_name: invest-tracker-client
+    restart: always
+    ports:
+      - "5173:5173"
+    depends_on:
+      - server
+    environment:
+      - VITE_API_URL=http://localhost:3000
+    networks:
+      - app-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  app-network:
+    driver: bridge
