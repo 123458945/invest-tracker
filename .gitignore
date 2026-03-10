@@ -47,10 +47,6 @@ coverage/
 *.temp
 .cache/
 
-# 部署文档
-PREVIEW.md
-DEPLOYMENT_PLAN.md
-
 # 数据库
 *.sqlite
 *.db
