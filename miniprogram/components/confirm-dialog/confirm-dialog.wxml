@@ -1,10 +1,40 @@
-<view wx:if="{{show}}" class="dialog-mask">
-  <view class="dialog-container">
-    <view class="dialog-title">{{title}}</view>
-    <view class="dialog-content">{{content}}</view>
+<view wx:if="{{show}}" class="dialog-mask" catchtap="onCancel">
+  <view class="dialog-container" catchtap="onContainerTap">
+    <view class="dialog-content">
+      <view class="dialog-title">{{title}}</view>
+      <view class="dialog-message" wx:if="{{content}}">{{content}}</view>
+      
+      <!--输入框-->
+      <view wx:if="{{inputType !== 'none'}}" class="dialog-input-wrapper">
+        <input 
+          class="dialog-input" 
+          type="{{inputType}}" 
+          placeholder="{{inputPlaceholder}}" 
+          value="{{inputValue}}"
+          bindinput="onInputChange"
+          confirm-type="done"
+        />
+        <view wx:if="{{confirmValue}}" class="dialog-input-hint">
+          请输入 {{confirmValue}} 以确认操作
+        </view>
+      </view>
+    </view>
+    
     <view class="dialog-buttons">
-      <button class="dialog-btn cancel" bindtap="onCancel">{{cancelText}}</button>
-      <button class="dialog-btn confirm" bindtap="onConfirm">{{confirmText}}</button>
+      <view 
+        class="dialog-btn cancel" 
+        style="color: {{cancelColor}}"
+        catchtap="onCancel"
+      >
+        {{cancelText}}
+      </view>
+      <view 
+        class="dialog-btn confirm {{danger ? 'danger' : ''}}" 
+        style="color: {{danger ? '#ef4444' : confirmColor}}"
+        catchtap="onConfirm"
+      >
+        {{confirmText}}
+      </view>
     </view>
   </view>
 </view>

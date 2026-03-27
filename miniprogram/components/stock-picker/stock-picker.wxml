@@ -2,24 +2,64 @@
   <input 
     class="search-input"
     type="text"
-    placeholder="{{placeholder}}"
     value="{{keyword}}"
-    bindinput="onInput"
+    placeholder="{{placeholder}}"
+    bindinput="onKeywordChange"
+    bindconfirm="searchStock"
   />
   
-  <view wx:if="{{searching}}" class="searching-hint">搜索中...</view>
-  
-  <view wx:if="{{showList}}" class="stock-list" catchtap="onTapOutside">
-    <view wx:for="{{stocks}}" wx:key="index" class="stock-item" data-index="{{index}}" bindtap="onSelectStock">
-      <view class="stock-info">
-        <text class="stock-code">{{item.code}}</text>
-        <text class="stock-name">{{item.stockName || item.name}}</text>
+  <!--搜索历史-->
+  <view wx:if="{{!showList && showHistory && searchHistory.length > 0}}" class="history-section">
+    <view class="history-header">
+      <text class="history-title">搜索历史</text>
+      <text class="history-clear" bindtap="clearSearchHistory">清空</text>
+    </view>
+    <view class="history-list">
+      <view 
+        wx:for="{{searchHistory}}" 
+        wx:key="code" 
+        class="history-item" 
+        data-index="{{index}}"
+        bindtap="onHistoryItemClick"
+      >
+        <text class="history-code">{{item.code}}</text>
+        <text class="history-name">{{item.name}}</text>
       </view>
-      <text class="stock-price">¥{{item.currentPrice || item.price}}</text>
     </view>
   </view>
   
+  <!--搜索结果列表-->
+  <view wx:if="{{showList}}" class="stock-list" catchtap="onTapOutside">
+    <!--搜索中状态-->
+    <view wx:if="{{searching}}" class="searching-state">
+      <text>搜索中...</text>
+    </view>
+    
+    <!--搜索结果-->
+    <view wx:elif="{{stocks.length > 0}}">
+      <view wx:for="{{stocks}}" wx:key="code" class="stock-item" data-index="{{index}}" bindtap="onSelectStock">
+        <view class="stock-info">
+          <text class="stock-name">{{item.name || item.stockName}}</text>
+          <text class="stock-code">{{item.code}}</text>
+        </view>
+        <view class="stock-price">
+          <text class="price-value">¥{{item.currentPrice || item.price || '0.00'}}</text>
+          <text class="price-change {{item.changePercent > 0 ? 'up' : 'down'}}">
+            {{item.changePercent > 0 ? '+' : ''}}{{item.changePercent || 0}}%
+          </text>
+        </view>
+      </view>
+    </view>
+    
+    <!--无搜索结果-->
+    <view wx:else class="empty-result">
+      <text>未找到相关股票</text>
+    </view>
+  </view>
+  
+  <!--已选择状态-->
   <view wx:if="{{selectedStock}}" class="selected-stock">
-    <text>已选择：{{selectedStock.stockName || selectedStock.name}} ({{selectedStock.code}})</text>
+    <text class="selected-text">已选择: {{selectedStock.stockName || selectedStock.name}} ({{selectedStock.code}})</text>
+    <text class="selected-price">¥{{selectedStock.currentPrice || selectedStock.price || '0.00'}}</text>
   </view>
 </view>

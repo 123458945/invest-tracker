@@ -1,4 +1,15 @@
 <view class="empty-container">
-  <image wx:if="{{icon !== 'none'}}" class="empty-icon" src="{{icon}}"></image>
-  <text class="empty-text">{{text}}</text>
+  <!--图标-->
+  <view class="empty-icon">
+    <text wx:if="{{!icon}}">{{defaultIcons[type] || '📭'}}</text>
+    <image wx:else class="empty-icon-img" src="{{icon}}" mode="aspectFit"></image>
+  </view>
+  
+  <!--文案-->
+  <text class="empty-text">{{text || defaultTexts[type] || '暂无数据'}}</text>
+  
+  <!--操作按钮-->
+  <view wx:if="{{showAction || actionText}}" class="empty-action" bindtap="onAction">
+    {{actionText || defaultActions[type] || '操作'}}
+  </view>
 </view>
