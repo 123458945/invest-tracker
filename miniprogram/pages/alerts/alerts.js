@@ -1,4 +1,7 @@
+// pages/alerts/alerts.js
 const { get, post, put, del } = require('../../utils/request.js')
+
+const { showToast } = require('../../utils/toast.js')
 
 Page({
   data: {
@@ -58,13 +61,10 @@ Page({
     const alert = e.currentTarget.dataset.alert
     try {
       await put(`/alerts/${alert._id}`, { isActive: !alert.isActive })
-      wx.showToast({
-        title: alert.isActive ? '已暂停' : '已启用',
-        icon: 'success'
-      })
+      showToast(alert.isActive ? '已暂停' : '已启用')
       await this.fetchAlerts()
     } catch (err) {
-      wx.showToast({ title: '操作失败', icon: 'none' })
+      showToast('操作失败', 'none')
     }
   },
 
@@ -72,10 +72,10 @@ Page({
     const alert = e.currentTarget.dataset.alert
     try {
       await post(`/alerts/${alert._id}/reset`)
-      wx.showToast({ title: '已重置', icon: 'success' })
+      showToast('已重置')
       await this.fetchAlerts()
     } catch (err) {
-      wx.showToast({ title: '重置失败', icon: 'none' })
+      showToast('重置失败', 'none')
     }
   },
 
@@ -88,13 +88,19 @@ Page({
         if (res.confirm) {
           try {
             await del(`/alerts/${alert._id}`)
-            wx.showToast({ title: '删除成功', icon: 'success' })
+            showToast('删除成功')
             await this.fetchAlerts()
           } catch (err) {
-            wx.showToast({ title: '删除失败', icon: 'none' })
+            showToast('删除失败', 'none')
           }
         }
       }
+    })
+  },
+
+  onPullDownRefresh() {
+    this.fetchAlerts().then(() => {
+      wx.stopPullDownRefresh()
     })
   }
 })

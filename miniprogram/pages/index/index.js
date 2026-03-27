@@ -1,6 +1,5 @@
 const { get } = require('../../utils/request.js')
-
-let assetChart = null
+const { showToast } = require('../../utils/toast.js')
 
 Page({
   data: {
@@ -52,6 +51,8 @@ Page({
       const assetAllocation = allocationRes.data || []
       const { topGainers = [], topLosers = [] } = performersRes.data || {}
 
+
+
       // 计算统计数据
       const totalMarketValue = holdings.reduce((sum, h) => sum + (h.marketValue || 0), 0)
       const totalCostBasis = holdings.reduce((sum, h) => sum + ((h.quantity || 0) * (h.avgBuyPrice || 0)), 0)
@@ -86,15 +87,9 @@ Page({
       this.setData({ updating: true })
       await get('/stocks/update-holdings')
       await this.fetchData()
-      wx.showToast({
-        title: '价格更新成功',
-        icon: 'success'
-      })
+      showToast('价格更新成功')
     } catch (err) {
-      wx.showToast({
-        title: '更新失败',
-        icon: 'none'
-      })
+      showToast('更新失败')
     } finally {
       this.setData({ updating: false })
     }

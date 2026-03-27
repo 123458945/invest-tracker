@@ -10,7 +10,10 @@ Page({
     totalMarketValue: '¥0.00',
     totalUnrealizedProfit: '¥0.00',
     totalRealizedProfit: '¥0.00',
-    totalProfit: '¥0.00'
+    totalProfit: '¥0.00',
+    page: 1,
+    pageSize: 20,
+    hasMore: true
   },
 
   onLoad() {
@@ -35,7 +38,7 @@ Page({
   async fetchHoldings() {
     try {
       this.setData({ loading: true, error: '' })
-      const res = await get('/holdings')
+      const res = await get('/holdings', { page: this.data.page, limit: this.data.pageSize })
       
       const holdings = res.data || []
       const totalMarketValue = holdings.reduce((sum, h) => sum + (h.marketValue || 0), 0)
@@ -62,7 +65,7 @@ Page({
   async handleUpdatePrices() {
     try {
       this.setData({ updating: true })
-      await get('/stocks/update-holdings')
+      await post('/stocks/update-holdings')
       await this.fetchHoldings()
       wx.showToast({
         title: '价格更新成功',
@@ -79,20 +82,20 @@ Page({
   },
 
   openAddDialog() {
-    wx.navigateTo({ url: '/pages/holdings/add-holding' })
+    wx.navigateTo({ url: '/pages/holdings/add-holding/add-holding' })
   },
 
   handleEdit(e) {
     const holding = e.currentTarget.dataset.holding
     wx.navigateTo({
-      url: `/pages/holdings/edit-holding?id=${holding._id}`
+      url: `/pages/holdings/edit-holding/edit-holding?id=${holding._id}`
     })
   },
 
   handleSell(e) {
     const holding = e.currentTarget.dataset.holding
     wx.navigateTo({
-      url: `/pages/holdings/sell-holding?id=${holding._id}&name=${holding.stockName}&quantity=${holding.quantity}&price=${holding.currentPrice}`
+      url: `/pages/holdings/sell-holding/sell-holding?id=${holding._id}&name=${holding.stockName}&quantity=${holding.quantity}&price=${holding.currentPrice}`
     })
   },
 
@@ -122,14 +125,28 @@ Page({
   },
 
   navigateToTransactions() {
-    wx.showToast({
-      title: '交易记录功能开发中',
-      icon: 'none'
-    })
+    wx.navigateTo({ url: '/pages/transactions/transactions' })
   },
 
   formatCurrency(value) {
     const prefix = value >= 0 ? '+' : ''
-    return prefix + '¥' + Math.abs(value).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    return prefix + '¥' + Math.abs(value || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  },
+
+  onPullDownRefresh() {
+    this.fetchHoldings().then(() => {
+      wx.stopPullDownRefresh()
+    })
+  },
+
+  onReachBottom() {
+    if (this.data.hasMore && !this.data.loading) {
+      this.setData({ 
+        page: this.data.page + 1,
+        loading: true,
+        hasMore: true
+      })
+      this.fetchHoldings()
+    }
   }
 })

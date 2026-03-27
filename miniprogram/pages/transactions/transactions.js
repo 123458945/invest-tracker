@@ -1,4 +1,7 @@
+// pages/transactions/transactions.js
 const { get } = require('../../utils/request.js')
+
+const { showToast } = require('../../utils/toast.js')
 
 Page({
   data: {
@@ -58,7 +61,7 @@ Page({
         params.type = filterType
       }
 
-      const res = await get('/holdings/transactions', params)
+      const res = await get('/holdings/transactions', { params })
       const transactions = res.data || []
 
       this.setData({
@@ -101,22 +104,13 @@ Page({
   },
 
   onReachBottom() {
-    if (this.data.hasMore && !this.data.loadingMore) {
-      this.setData({ page: this.data.page + 1 })
+    if (this.data.hasMore && !this.data.loading) {
+      this.setData({ 
+        page: this.data.page + 1,
+        loading: true,
+        hasMore: true
+      })
       this.fetchTransactions(true)
     }
-  },
-
-  formatDate(dateStr) {
-    if (!dateStr) return ''
-    const date = new Date(dateStr)
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
-  },
-
-  formatCurrency(value) {
-    return '¥' + (value || 0).toFixed(2)
   }
 })
