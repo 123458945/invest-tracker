@@ -1,0 +1,104 @@
+<view class="container">
+  <view wx:if="{{loading}}" class="loading">加载中...</view>
+  
+  <view wx:else class="content">
+    <!-- 用户信息 -->
+    <view wx:if="{{userInfo}}" class="user-card">
+      <view class="user-avatar">
+        <open-data type="userAvatarUrl"></open-data>
+      </view>
+      <view class="user-info">
+        <text class="username">{{userInfo.username}}</text>
+        <text class="email">{{userInfo.email}}</text>
+      </view>
+    </view>
+
+    <!-- 设置项 -->
+    <view class="section">
+      <view class="section-title">通知设置</view>
+      
+      <view class="setting-item">
+        <text class="setting-label">APP推送通知</text>
+        <switch 
+          checked="{{settings.notifyByApp}}" 
+          data-key="notifyByApp"
+          bindchange="onSettingChange"
+        />
+      </view>
+
+      <view class="setting-item">
+        <text class="setting-label">邮件通知</text>
+        <switch 
+          checked="{{settings.notifyByEmail}}" 
+          data-key="notifyByEmail"
+          bindchange="onSettingChange"
+        />
+      </view>
+
+      <view class="setting-item">
+        <text class="setting-label">每日报告</text>
+        <switch 
+          checked="{{settings.dailyReport}}" 
+          data-key="dailyReport"
+          bindchange="onSettingChange"
+        />
+      </view>
+    </view>
+
+    <!-- 功能入口 -->
+    <view class="section">
+      <view class="section-title">其他功能</view>
+      
+      <view class="menu-item" bindtap="navigateToTransactions">
+        <text class="menu-label">交易记录</text>
+        <text class="menu-arrow">></text>
+      </view>
+
+      <view class="menu-item" bindtap="showChangePassword">
+        <text class="menu-label">修改密码</text>
+        <text class="menu-arrow">></text>
+      </view>
+    </view>
+
+    <!-- 退出登录 -->
+    <button class="logout-btn" bindtap="handleLogout">退出登录</button>
+  </view>
+
+  <!-- 修改密码弹窗 -->
+  <view wx:if="{{showPasswordModal}}" class="modal-mask">
+    <view class="modal-content">
+      <view class="modal-title">修改密码</view>
+      
+      <view class="modal-form">
+        <input 
+          class="modal-input" 
+          type="password" 
+          placeholder="请输入旧密码"
+          value="{{passwordForm.oldPassword}}"
+          bindinput="onOldPasswordInput"
+        />
+        <input 
+          class="modal-input" 
+          type="password" 
+          placeholder="请输入新密码（至少6位）"
+          value="{{passwordForm.newPassword}}"
+          bindinput="onNewPasswordInput"
+        />
+        <input 
+          class="modal-input" 
+          type="password" 
+          placeholder="请再次输入新密码"
+          value="{{passwordForm.confirmPassword}}"
+          bindinput="onConfirmPasswordInput"
+        />
+      </view>
+
+      <view class="modal-buttons">
+        <button class="modal-btn cancel" bindtap="hidePasswordModal">取消</button>
+        <button class="modal-btn confirm" bindtap="handleChangePassword" disabled="{{submitting}}">
+          确定
+        </button>
+      </view>
+    </view>
+  </view>
+</view>

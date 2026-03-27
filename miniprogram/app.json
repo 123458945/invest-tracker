@@ -11,6 +11,7 @@
     "pages/alerts/add-alert/add-alert",
     "pages/transactions/transactions",
     "pages/profile/profile",
+    "pages/settings/settings",
     "pages/login/login",
     "pages/register/register"
   ],

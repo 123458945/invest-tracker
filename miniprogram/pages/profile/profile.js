@@ -19,11 +19,11 @@ Page({
   },
 
   navigateToSettings() {
-    wx.showToast({ title: '个人设置功能开发中', icon: 'none' })
+    wx.navigateTo({ url: '/pages/settings/settings' })
   },
 
   navigateToTransactions() {
-    wx.showToast({ title: '交易记录功能开发中', icon: 'none' })
+    wx.navigateTo({ url: '/pages/transactions/transactions' })
   },
 
   showAbout() {
