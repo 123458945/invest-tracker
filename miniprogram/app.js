@@ -14,6 +14,34 @@ App({
     }
   },
 
+  // 添加全局错误处理
+    onError(msg) {
+    console.error('小程序错误： ', msg)
+    wx.showToast({
+      title: '小程序发生错误',
+      icon: 'none',
+      duration: 3000
+    })
+  },
+
+  // 添加未处理的 Promise 拒绝处理
+    onUnhandledRejection(event) {
+    console.error('未处理的 Promise 拒绝: ', event)
+    wx.showToast({
+      title: '发生未知错误',
+      icon: 'none',
+      duration: 3000
+    })
+  },
+
+  // 添加页面未找到处理
+  onPageNotFound(res) {
+    console.warn('页面未找到: ', res)
+    wx.redirectTo({
+      url: '/pages/index/index'
+    })
+  },
+
   checkAuth() {
     return new Promise((resolve, reject) => {
       if (!this.globalData.token) {
@@ -88,5 +116,15 @@ App({
     this.globalData.token = null
     this.globalData.userInfo = null
     wx.removeStorageSync('token')
+  },
+
+  // 在开发模式下启用调试
+  enableDebug() {
+    if (process.env.NODE_ENV === 'development') {
+      wx.setEnableDebug({
+        enableDebug: true
+      })
+    }
   }
 })
+
