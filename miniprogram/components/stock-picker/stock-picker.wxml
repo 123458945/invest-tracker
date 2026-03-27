@@ -1,0 +1,25 @@
+<view class="stock-picker">
+  <input 
+    class="search-input"
+    type="text"
+    placeholder="{{placeholder}}"
+    value="{{keyword}}"
+    bindinput="onInput"
+  />
+  
+  <view wx:if="{{searching}}" class="searching-hint">搜索中...</view>
+  
+  <view wx:if="{{showList}}" class="stock-list" catchtap="onTapOutside">
+    <view wx:for="{{stocks}}" wx:key="index" class="stock-item" data-index="{{index}}" bindtap="onSelectStock">
+      <view class="stock-info">
+        <text class="stock-code">{{item.code}}</text>
+        <text class="stock-name">{{item.stockName || item.name}}</text>
+      </view>
+      <text class="stock-price">¥{{item.currentPrice || item.price}}</text>
+    </view>
+  </view>
+  
+  <view wx:if="{{selectedStock}}" class="selected-stock">
+    <text>已选择：{{selectedStock.stockName || selectedStock.name}} ({{selectedStock.code}})</text>
+  </view>
+</view>
