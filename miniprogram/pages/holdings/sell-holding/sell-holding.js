@@ -55,6 +55,8 @@ Page({
       if (res.success && res.data) {
         const holding = res.data
         this.setData({
+          totalQuantity: holding.quantity || 0,
+          currentPrice: holding.currentPrice || 0,
           avgBuyPrice: holding.avgBuyPrice || 0,
           loading: false
         })

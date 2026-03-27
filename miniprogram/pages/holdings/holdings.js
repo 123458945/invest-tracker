@@ -1,5 +1,5 @@
 const { get, del } = require('../../utils/request.js')
-const { showToast } = require('../../utils/toast.js')
+const { showToast, showConfirm } = require('../../utils/toast.js')
 const { groupBy } = require('../../utils/util.js')
 const { checkLogin, isLoggedIn } = require('../../utils/auth.js')
 
@@ -73,8 +73,8 @@ Page({
       })
       
       // 计算总计
-      const totalMarketValue = all.reduce((sum, h) => sum + (h.marketValue || 0), 0)
-      const totalCostBasis = all.reduce((sum, h) => sum + (h.quantity * h.avgBuyPrice), 0), 0)
+      const totalMarketValue = holdings.reduce((sum, h) => sum + (h.marketValue || 0), 0)
+      const totalCostBasis = holdings.reduce((sum, h) => sum + (h.quantity * h.avgBuyPrice), 0)
       const totalProfitLoss = totalMarketValue - totalCostBasis
       const totalProfitLossRate = totalCostBasis > 0 ? (totalProfitLoss / totalCostBasis) * 100 : 0
       
@@ -118,26 +118,26 @@ Page({
   },
 
   handleEdit(e) {
-    const { holding } = e.currentTarget.dataset.holding
+    const id = e.currentTarget.dataset.id
  wx.navigateTo({
-      url: `/pages/holdings/edit-holding/edit-holding?id=${holding._id}`
+      url: `/pages/holdings/edit-holding/edit-holding?id=${id}`
     })
   },
 
   handleSell(e) {
-    const { holding } = e.currentTarget.dataset.holding
+    const { id, name, quantity, price } = e.currentTarget.dataset
  wx.navigateTo({
-      url: `/pages/holdings/sell-holding/sell-holding?id=${holding._id}&name=${encodeURIComponent(holding.stockName)}&quantity=${holding.quantity}&price=${holding.currentPrice}`
+      url: `/pages/holdings/sell-holding/sell-holding?id=${id}&name=${encodeURIComponent(name)}&quantity=${quantity}&price=${price}`
     })
   },
 
   async handleDelete(e) {
-    const { holding } = e.currentTarget.dataset.holding
- const res = await showConfirm(`确定要删除 ${holding.stockName} 吗？`)
-    
+    const { id, name } = e.currentTarget.dataset
+ const res = await showConfirm(`确定要删除 ${name} 吗？`)
+
     if (res) {
       try {
-        await del(`/holdings/${holding._id}`)
+        await del(`/holdings/${id}`)
         showToast('删除成功')
         this.fetchData()
       } catch (err) {

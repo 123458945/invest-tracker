@@ -36,7 +36,7 @@
   <!-- 交易列表 -->
   <view wx:if="{{loading}}" class="loading">加载中...</view>
   
-  <view wx:elif class="transaction-list">
+  <view wx:elif="{{true}}" class="transaction-list">
     <view wx:if="{{transactions.length === 0}}" class="empty">
       暂无交易记录
     </view>

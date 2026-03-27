@@ -39,8 +39,6 @@ Page({
       wx.redirectTo({ url: '/pages/login/login' })
       return
     }
-    this.fetchTransactions()
-    this.fetchStats()
   },
 
   async fetchTransactions(append = false) {
@@ -98,9 +96,9 @@ Page({
   },
 
   onPullDownRefresh() {
-    this.fetchTransactions()
-    this.fetchStats()
-    wx.stopPullDownRefresh()
+    Promise.all([this.fetchTransactions(), this.fetchStats()]).finally(() => {
+      wx.stopPullDownRefresh()
+    })
   },
 
   onReachBottom() {

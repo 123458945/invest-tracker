@@ -5,7 +5,7 @@
  */
 function navigateToStockDetail(code, market = 'sh') {
   wx.navigateTo({
-    url: `/pages/stocks/stock-detail/stock-detail?code=${code}&market=${market || 'sh'}`
+    url: `/pages/stocks/stock-detail/stock-detail?code=${encodeURIComponent(code)}&market=${encodeURIComponent(market || 'sh')}`
   })
 }
 
@@ -14,7 +14,7 @@ function navigateToStockDetail(code, market = 'sh') {
  */
 function navigateToEditHolding(id) {
   wx.navigateTo({
-    url: `/pages/holdings/edit-holding/edit-holding?id=${id}`
+    url: `/pages/holdings/edit-holding/edit-holding?id=${encodeURIComponent(id)}`
   })
 }
 
@@ -33,7 +33,7 @@ function navigateToSellHolding(id, stockName, quantity, price) {
 function navigateToAddAlert(stockCode, stockName) {
   let url = '/pages/alerts/add-alert/add-alert'
   if (stockCode && stockName) {
-    url += `?code=${stockCode}&name=${encodeURIComponent(stockName)}`
+    url += `?code=${encodeURIComponent(stockCode)}&name=${encodeURIComponent(stockName)}`
   }
   wx.navigateTo({ url })
 }

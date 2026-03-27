@@ -35,7 +35,6 @@ Page({
       wx.redirectTo({ url: '/pages/login/login' })
       return
     }
-    this.fetchSettings()
   },
 
   async fetchSettings() {

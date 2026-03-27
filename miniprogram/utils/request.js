@@ -1,7 +1,10 @@
 // utils/request.js
 
-const app = getApp()
 const { showToast, showLoading, hideLoading } = require('./toast.js')
+
+function getAppInstance() {
+  return getApp()
+}
 
 // 请求队列，用于防抖
 const requestQueue = new Map()
@@ -115,44 +118,38 @@ const request = (url, method = 'GET', data = {}, options = {}) => {
   return doRequest()
   
   function doRequest() {
+    const app = getAppInstance()
     const token = app.globalData.token
     const requestKey = generateRequestKey(url, method, data)
-    
+
     // 防抖：检查是否有相同请求正在进行
     if (debounce && hasDuplicateRequest(requestKey)) {
       return getDuplicateRequest(requestKey)
     }
-    
+
     // 显示加载提示
     if (showLoadingFlag) {
       showLoading(loadingText)
     }
-    
+
     const requestPromise = new Promise((resolve, reject) => {
       let retryAttempts = 0
-      
+
       const makeRequest = () => {
-        // 创建超时定时器
-        const timeoutId = setTimeout(() => {
-          showToast('请求超时，请稍后重试', 'none')
-          reject(new Error('请求超时'))
-        }, timeout)
-        
         wx.request({
           url: `${app.globalData.baseUrl}${url}`,
           method,
           data,
+          timeout: timeout,
           header: {
             'Content-Type': 'application/json',
             'Authorization': token ? `Bearer ${token}` : ''
           },
           success: (res) => {
-            clearTimeout(timeoutId)
-            
             if (showLoadingFlag) {
               hideLoading()
             }
-            
+
             // 处理 401 未授权
             if (res.statusCode === 401) {
               app.logout()
@@ -161,28 +158,28 @@ const request = (url, method = 'GET', data = {}, options = {}) => {
               reject(new Error('未授权，请重新登录'))
               return
             }
-            
+
             // 处理 403 禁止访问
             if (res.statusCode === 403) {
               showToast('没有访问权限', 'none')
               reject(new Error('没有访问权限'))
               return
             }
-            
+
             // 处理 404 未找到
             if (res.statusCode === 404) {
               showToast('请求的资源不存在', 'none')
               reject(new Error('资源不存在'))
               return
             }
-            
+
             // 处理 500 服务器错误
             if (res.statusCode >= 500) {
               showToast('服务器错误，请稍后重试', 'none')
               reject(new Error('服务器错误'))
               return
             }
-            
+
             // 成功响应
             if (res.statusCode === 200) {
               resolve(res.data)
@@ -193,12 +190,10 @@ const request = (url, method = 'GET', data = {}, options = {}) => {
             }
           },
           fail: (err) => {
-            clearTimeout(timeoutId)
-            
             if (showLoadingFlag) {
               hideLoading()
             }
-            
+
             // 网络请求失败，尝试重试
             if (retry && retryAttempts < retryCount) {
               retryAttempts++
@@ -208,14 +203,14 @@ const request = (url, method = 'GET', data = {}, options = {}) => {
               }, 1000 * retryAttempts) // 递增延迟
               return
             }
-            
+
             // 重试次数用完，显示错误
             showToast('网络请求失败，请检查网络', 'none')
             reject(err)
           }
         })
       }
-      
+
       makeRequest()
     })
     
@@ -274,8 +269,9 @@ const del = (url, options = {}) => {
  */
 const upload = (url, filePath, name = 'file', formData = {}) => {
   return new Promise((resolve, reject) => {
+    const app = getAppInstance()
     const token = app.globalData.token
-    
+
     wx.uploadFile({
       url: `${app.globalData.baseUrl}${url}`,
       filePath: filePath,
@@ -293,7 +289,7 @@ const upload = (url, filePath, name = 'file', formData = {}) => {
             resolve(res.data)
           }
         } else if (res.statusCode === 401) {
-          app.logout()
+          getAppInstance().logout()
           wx.redirectTo({ url: '/pages/login/login' })
           reject(new Error('未授权，请重新登录'))
         } else {
@@ -313,8 +309,9 @@ const upload = (url, filePath, name = 'file', formData = {}) => {
  */
 const download = (url) => {
   return new Promise((resolve, reject) => {
+    const app = getAppInstance()
     const token = app.globalData.token
-    
+
     wx.downloadFile({
       url: `${app.globalData.baseUrl}${url}`,
       header: {
@@ -324,7 +321,7 @@ const download = (url) => {
         if (res.statusCode === 200) {
           resolve(res.tempFilePath)
         } else if (res.statusCode === 401) {
-          app.logout()
+          getAppInstance().logout()
           wx.redirectTo({ url: '/pages/login/login' })
           reject(new Error('未授权，请重新登录'))
         } else {

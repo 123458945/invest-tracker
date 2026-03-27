@@ -55,7 +55,7 @@ K线数据
       this.setData({
         stockInfo,
         maData,
-        klineData
+        klineData,
         loading: false
       })
 
@@ -126,7 +126,7 @@ K线数据
             ctx.lineTo(x, lowY)
             ctx.stroke()
             const barHeight = Math.abs(closeY - openY)
-            ctx.fillRect(x - barWidth/3, Math.min(openY, closeY), barHeight || 1)
+            ctx.fillRect(x - barWidth/3, Math.min(openY, closeY), barWidth * 2/3, barHeight || 1)
           })
         }
       })
@@ -171,11 +171,14 @@ K线数据
   },
 
   drawLine(ctx, data, color, width, height, label) {
-    if (!data || data.length === 0) return
+    if (!data || data.length < 2) return
+    ctx.beginPath()
+    ctx.strokeStyle = color
     const maxPrice = Math.max(...data)
     const minPrice = Math.min(...data.filter(v => v !== null))
     const priceRange = maxPrice - minPrice
     const stepX = (width - 40) / (data.length - 1)
+    let started = false
     data.forEach((value, index) => {
       if (value === null) return
       

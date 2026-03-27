@@ -35,7 +35,7 @@
   </view>
 
   <!-- 按市场分组显示 -->
-  <view wx:for="{{groupedHoldings}}" wx:for="group in groupedHoldings" wx:key="index">
+  <view wx:for="{{groupedHoldings}}" wx:for-item="group" wx:key="index">
     <view class="group-section">
       <text class="group-title">{{group.key === 'sh' ? '上海' : '深圳'}}</text>
       <text class="group-total">{{group.summary.totalMarketValue}}</text>
@@ -49,9 +49,9 @@
             <text class="holding-code">{{item.stockCode}}</text>
           </view>
           <view class="holding-actions">
-            <text class="action-icon" bindtap="handleEdit" data-holding="{{item}}">✏️</text>
-            <text class="action-icon" bindtap="handleSell" data-holding="{{item}}">💰</text>
-            <text class="action-icon" bindtap="handleDelete" data-holding="{{item}}">🗑</text>
+            <text class="action-icon" bindtap="handleEdit" data-id="{{item._id}}">✏️</text>
+            <text class="action-icon" bindtap="handleSell" data-id="{{item._id}}" data-name="{{item.stockName}}" data-quantity="{{item.quantity}}" data-price="{{item.currentPrice}}">💰</text>
+            <text class="action-icon" bindtap="handleDelete" data-id="{{item._id}}" data-name="{{item.stockName}}">🗑</text>
           </view>
         </view>
         

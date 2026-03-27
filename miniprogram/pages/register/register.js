@@ -61,12 +61,13 @@ Page({
 
     try {
       await app.register(username, email, password)
+      this.setData({ loading: false })
       wx.showToast({
         title: '注册成功',
         icon: 'success'
       })
       setTimeout(() => {
-        wx.navigateTo({ 
+        wx.redirectTo({
           url: '/pages/login/login?message=注册成功，请登录'
         })
       }, 1500)

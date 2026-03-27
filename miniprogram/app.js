@@ -1,9 +1,11 @@
 // app.js
+const ENV = typeof __wxConfig !== 'undefined' && __wxConfig.envVersion ? __wxConfig.envVersion : 'develop'
+
 App({
   globalData: {
     userInfo: null,
     token: null,
-    baseUrl: 'http://localhost:3000/api'
+    baseUrl: ENV === 'release' ? 'https://your-api-domain.com/api' : 'http://localhost:3000/api'
   },
 
   onLaunch() {
@@ -37,7 +39,7 @@ App({
   // 添加页面未找到处理
   onPageNotFound(res) {
     console.warn('页面未找到: ', res)
-    wx.redirectTo({
+    wx.reLaunch({
       url: '/pages/index/index'
     })
   },
@@ -120,7 +122,7 @@ App({
 
   // 在开发模式下启用调试
   enableDebug() {
-    if (process.env.NODE_ENV === 'development') {
+    if (typeof __wxConfig !== 'undefined' && __wxConfig.envVersion === 'develop') {
       wx.setEnableDebug({
         enableDebug: true
       })

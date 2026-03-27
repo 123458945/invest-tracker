@@ -1,4 +1,5 @@
 const { get, post } = require('../../../utils/request.js')
+const { debounce } = require('../../../utils/util.js')
 
 Page({
   data: {
@@ -22,9 +23,9 @@ Page({
     searching: false
   },
 
-  onStockCodeInput(e) {
+  onStockCodeInput: debounce(function(e) {
     const value = e.detail.value.replace(/\D/g, '').slice(0, 6)
-    this.setData({ 
+    this.setData({
       stockCode: value,
       stockName: '',
       error: ''
@@ -33,7 +34,7 @@ Page({
         this.searchStock(value)
       }
     })
-  },
+  }, 500),
 
   async searchStock(code) {
     if (this.data.searching) return

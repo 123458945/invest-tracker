@@ -1,11 +1,14 @@
 // utils/auth.js
 
-const app = getApp()
+function getAppInstance() {
+  return getApp()
+}
 
 /**
  * 检查是否已登录
  */
 function isLoggedIn() {
+  const app = getAppInstance()
   return !!app.globalData.token
 }
 
@@ -13,6 +16,7 @@ function isLoggedIn() {
  * 检查 token 是否有效
  */
 function isTokenValid() {
+  const app = getAppInstance()
   const token = app.globalData.token
   if (!token) {
     return false
@@ -26,7 +30,7 @@ function isTokenValid() {
  * 获取当前用户信息
  */
 function getCurrentUser() {
-  return app.globalData.userInfo
+  return getAppInstance().globalData.userInfo
 }
 
 /**
@@ -68,6 +72,7 @@ function requireLogin(action, options = {}) {
  * 获取存储的 token
  */
 function getToken() {
+  const app = getAppInstance()
   return app.globalData.token || wx.getStorageSync('token')
 }
 
@@ -75,6 +80,7 @@ function getToken() {
  * 设置 token
  */
 function setToken(token) {
+  const app = getAppInstance()
   app.globalData.token = token
   wx.setStorageSync('token', token)
 }
@@ -83,6 +89,7 @@ function setToken(token) {
  * 清除登录状态
  */
 function clearLoginState() {
+  const app = getAppInstance()
   app.globalData.token = null
   app.globalData.userInfo = null
   wx.removeStorageSync('token')
@@ -113,7 +120,7 @@ function validateLogin() {
       return
     }
     
-    app.checkAuth()
+    getAppInstance().checkAuth()
       .then(user => {
         resolve(user)
       })
@@ -136,7 +143,7 @@ function autoLogin() {
       return
     }
     
-    app.globalData.token = token
+    getAppInstance().globalData.token = token
     validateLogin()
       .then(user => {
         resolve(user)

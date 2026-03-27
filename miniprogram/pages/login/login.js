@@ -42,6 +42,7 @@ Page({
 
     try {
       await app.login(email, password)
+      this.setData({ loading: false })
       wx.switchTab({ url: '/pages/index/index' })
     } catch (err) {
       this.setData({ 

@@ -60,18 +60,10 @@ Page({
       const totalProfitLoss = totalMarketValue - totalCostBasis
       const totalProfitLossRate = totalCostBasis > 0 ? (totalProfitLoss / totalCostBasis) * 100 : 0
       
-      // 计算今日盈亏（假设有当前价格数据）
+      // 计算今日盈亏
       const todayProfitLoss = holdings.reduce((sum, h) => {
-        // 计算今日盈亏（如果当日价格存在）
-        const todayPrice = h.currentPrice || h.price
-        const yesterdayPrice = h.previousPrice || h.avgBuyPrice
-        const quantity = h.quantity || 0
-        const todayValue = todayPrice * quantity
-        const yesterdayValue = yesterdayPrice * quantity
-        return todayValue - yesterdayValue
+        return sum + (h.profitLoss || 0)
       }, 0)
-        
-        const todayProfitLoss = holdings.reduce((sum, h) => todayProfitLoss + (h.profitLoss || 0), 0)
       const todayProfitLossRate = totalCostBasis > 0 ? (todayProfitLoss / totalCostBasis) * 100 : 0
       
       const profitCount = holdings.filter(h => h.profitLoss > 0).length
@@ -134,7 +126,7 @@ Page({
   },
 
   onPullDownRefresh() {
-    this.fetchData().then(() => {
+    this.fetchData().catch(() => {}).then(() => {
       wx.stopPullDownRefresh()
     })
   },

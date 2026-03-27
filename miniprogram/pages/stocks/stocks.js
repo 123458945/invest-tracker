@@ -23,7 +23,7 @@ Page({
     this.setData({ keyword })
   },
 
-  handleSearch: debounce(function() {
+  handleSearch: debounce(async function() {
     const keyword = this.data.keyword.trim()
     if (!keyword) {
       this.setData({ stocks: [], error: '' })
@@ -31,13 +31,13 @@ Page({
     }
 
     this.setData({ searching: true, error: '' })
-    
+
     try {
       const res = await get('/stocks/search', { keyword })
       if (res.success && res.data && res.data.length > 0) {
-        this.setData({ 
+        this.setData({
           stocks: res.data,
-          searching: false 
+          searching: false
         })
       } else {
         this.setData({
@@ -57,7 +57,7 @@ Page({
   handleStockClick(e) {
     const stock = e.currentTarget.dataset.stock
     wx.navigateTo({
-      url: `/pages/stocks/stock-detail/stock-detail?code=${stock.code || market=${stock.market || 'sh'}`
+      url: `/pages/stocks/stock-detail/stock-detail?code=${stock.code}&market=${stock.market || 'sh'}`
     })
   },
 
