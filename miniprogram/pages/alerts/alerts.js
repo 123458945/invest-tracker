@@ -51,7 +51,7 @@ Page({
   },
 
   openAddDialog() {
-    wx.showToast({ title: '添加提醒功能开发中', icon: 'none' })
+    wx.navigateTo({ url: '/pages/alerts/add-alert/add-alert' })
   },
 
   async handleToggle(e) {

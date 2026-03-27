@@ -8,6 +8,7 @@
     "pages/stocks/stocks",
     "pages/stocks/stock-detail/stock-detail",
     "pages/alerts/alerts",
+    "pages/alerts/add-alert/add-alert",
     "pages/profile/profile",
     "pages/login/login",
     "pages/register/register"
