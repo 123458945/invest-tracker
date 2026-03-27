@@ -1,0 +1,87 @@
+<view class="container">
+  <view wx:if="{{loading}}" class="loading">加载中...</view>
+  
+  <view wx:else class="content">
+    <view wx:if="{{error}}" class="error-msg">{{error}}</view>
+    
+    <view class="holding-info">
+      <view class="stock-name">{{stockName}}</view>
+      <view class="info-row">
+        <text class="info-label">持仓数量：</text>
+        <text class="info-value">{{totalQuantity}}股</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">当前价格：</text>
+        <text class="info-value">¥{{currentPrice}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">买入均价：</text>
+        <text class="info-value">¥{{avgBuyPrice}}</text>
+      </view>
+    </view>
+
+    <view class="form">
+      <view class="form-item">
+        <text class="label">卖出数量 *</text>
+        <input 
+          class="input" 
+          type="digit" 
+          placeholder="请输入卖出数量"
+          value="{{sellQuantity}}"
+          bindinput="onSellQuantityInput"
+        />
+        <view class="sell-all" bindtap="sellAll">全部卖出</view>
+      </view>
+
+      <view class="form-item">
+        <text class="label">卖出价格 *</text>
+        <input 
+          class="input" 
+          type="digit" 
+          placeholder="请输入卖出价格"
+          value="{{sellPrice}}"
+          bindinput="onSellPriceInput"
+        />
+      </view>
+
+      <view class="form-item">
+        <text class="label">卖出日期 *</text>
+        <picker 
+          mode="date" 
+          value="{{sellDate}}"
+          start="2000-01-01"
+          end="{{today}}"
+          bindchange="onSellDateChange"
+        >
+          <view class="picker">
+            {{sellDate || '请选择日期'}}
+          </view>
+        </picker>
+      </view>
+
+      <view wx:if="{{estimatedAmount}}" class="result-card">
+        <view class="result-row">
+          <text class="result-label">预估金额</text>
+          <text class="result-value">¥{{estimatedAmount}}</text>
+        </view>
+        <view class="result-row">
+          <text class="result-label">预估盈亏</text>
+          <text class="result-value {{estimatedProfit >= 0 ? 'profit' : 'loss'}}">
+            {{estimatedProfit >= 0 ? '+' : ''}}¥{{estimatedProfit}}
+          </text>
+        </view>
+      </view>
+    </view>
+
+    <view class="button-group">
+      <button class="btn btn-cancel" bindtap="handleCancel">取消</button>
+      <button 
+        class="btn btn-submit" 
+        bindtap="handleSubmit"
+        disabled="{{submitting}}"
+      >
+        {{submitting ? '卖出中...' : '确认卖出'}}
+      </button>
+    </view>
+  </view>
+</view>

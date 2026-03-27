@@ -2,6 +2,9 @@
   "pages": [
     "pages/index/index",
     "pages/holdings/holdings",
+    "pages/holdings/add-holding/add-holding",
+    "pages/holdings/edit-holding/edit-holding",
+    "pages/holdings/sell-holding/sell-holding",
     "pages/stocks/stocks",
     "pages/alerts/alerts",
     "pages/profile/profile",
