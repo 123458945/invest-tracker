@@ -1,6 +1,5 @@
 {
-  "navigationBarTitleText": "投资仪表板",
-  "usingComponents": {
-    "ec-canvas": "../../components/ec-canvas/ec-canvas"
-  }
+  "navigationBarTitleText": "InvestTracker",
+  "enablePullDownRefresh": true,
+  "usingComponents": {}
 }

@@ -1,19 +1,6 @@
-// pages/index/index.js
 const { get } = require('../../utils/request.js')
-import * as echarts from '../../components/ec-canvas/echarts';
 
-let assetChart = null;
-
-function initAssetChart(canvas, width, height, dpr) {
-  const chart = echarts.init(canvas, null, {
-    width: width,
-    height: height,
-    devicePixelRatio: dpr
-  });
-  canvas.setChart(chart);
-  assetChart = chart;
-  return chart;
-}
+let assetChart = null
 
 Page({
   data: {
@@ -29,9 +16,7 @@ Page({
     totalProfitLossRate: '+0.00%',
     profitCount: 0,
     lossCount: 0,
-    assetChartEc: {
-      onInit: initAssetChart
-    }
+    showChart: false
   },
 
   onLoad() {
@@ -88,11 +73,6 @@ Page({
         loading: false
       })
 
-      // 更新资产配置图表
-      if (assetAllocation.length > 0 && assetChart) {
-        this.updateAssetChart(assetAllocation)
-      }
-
     } catch (err) {
       this.setData({ 
         error: '获取数据失败',
@@ -120,34 +100,18 @@ Page({
     }
   },
 
-  updateAssetChart(data) {
-    const colors = ['#1976d2', '#2e7d32', '#ed6c02', '#9c27b0', '#d32f2f', '#0288d1', '#7b1fa2', '#f57c00']
-    const chartData = data.map((item, index) => ({
-      name: item.name,
-      value: item.value,
-      itemStyle: { color: colors[index % colors.length] }
-    }))
-
-    assetChart.setOption({
-      series: [{
-        name: '资产配置',
-        type: 'pie',
-        radius: ['40%', '70%'],
-        center: ['50%', '50%'],
-        data: chartData,
-        label: {
-          show: true,
-          formatter: '{b}: {d}%'
-        }
-      }]
-    })
-  },
-
   formatCurrency(value) {
-    return '¥' + (value || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    const prefix = value >= 0 ? '' : '-'
+    return prefix + '¥' + Math.abs(value || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
   },
 
   formatPercent(value) {
-    return (value >= 0 ? '+' : '') + value.toFixed(2) + '%'
+    return (value >= 0 ? '+' : '') + (value || 0).toFixed(2) + '%'
+  },
+
+  onPullDownRefresh() {
+    this.fetchData().then(() => {
+      wx.stopPullDownRefresh()
+    })
   }
 })
