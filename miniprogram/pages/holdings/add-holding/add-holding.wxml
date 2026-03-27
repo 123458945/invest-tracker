@@ -1,0 +1,106 @@
+<view class="container">
+  <view class="form-section">
+    <view class="section-title">股票信息</view>
+    
+    <view class="weui-cells weui-cells_after-title">
+      <view class="weui-cell weui-cell_input">
+        <view class="weui-cell__hd">
+          <view class="weui-label required">股票代码</view>
+        </view>
+        <view class="weui-cell__bd">
+          <input class="weui-input" placeholder="6位数字代码" value="{{stockCode}}" bindinput="onStockCodeInput" maxlength="6" type="number" />
+        </view>
+      </view>
+      
+      <view class="weui-cell weui-cell_select">
+        <view class="weui-cell__hd">
+          <view class="weui-label required">市场</view>
+        </view>
+        <view class="weui-cell__bd">
+          <picker bindchange="onMarketChange" value="{{marketIndex}}" range="{{markets}}" range-key="label">
+            <view class="weui-select">{{markets[marketIndex].label}}</view>
+          </picker>
+        </view>
+      </view>
+      
+      <view class="weui-cell weui-cell_input">
+        <view class="weui-cell__hd">
+          <view class="weui-label">股票名称</view>
+        </view>
+        <view class="weui-cell__bd">
+          <input class="weui-input" placeholder="自动获取或手动输入" value="{{stockName}}" bindinput="onStockNameInput" />
+        </view>
+        <view class="weui-cell__ft" wx:if="{{searching}}">
+          <text class="searching-text">搜索中...</text>
+        </view>
+      </view>
+    </view>
+    
+    <view class="weui-cells__tips" wx:if="{{stockInfo}}">
+      <text>当前价格: ¥{{stockInfo.currentPrice}} | {{stockInfo.stockName}}</text>
+    </view>
+  </view>
+
+  <view class="form-section">
+    <view class="section-title">交易信息</view>
+    
+    <view class="weui-cells weui-cells_after-title">
+      <view class="weui-cell weui-cell_select">
+        <view class="weui-cell__hd">
+          <view class="weui-label required">资产类型</view>
+        </view>
+        <view class="weui-cell__bd">
+          <picker bindchange="onAssetTypeChange" value="{{assetTypeIndex}}" range="{{assetTypes}}" range-key="label">
+            <view class="weui-select">{{assetTypes[assetTypeIndex].label}}</view>
+          </picker>
+        </view>
+      </view>
+      
+      <view class="weui-cell weui-cell_input">
+        <view class="weui-cell__hd">
+          <view class="weui-label required">买入数量</view>
+        </view>
+        <view class="weui-cell__bd">
+          <input class="weui-input" placeholder="请输入股数" value="{{quantity}}" bindinput="onQuantityInput" type="digit" />
+        </view>
+        <view class="weui-cell__ft">股</view>
+      </view>
+      
+      <view class="weui-cell weui-cell_input">
+        <view class="weui-cell__hd">
+          <view class="weui-label required">买入价格</view>
+        </view>
+        <view class="weui-cell__bd">
+          <input class="weui-input" placeholder="请输入价格" value="{{buyPrice}}" bindinput="onBuyPriceInput" type="digit" />
+        </view>
+        <view class="weui-cell__ft">元/股</view>
+      </view>
+      
+      <view class="weui-cell weui-cell_input">
+        <view class="weui-cell__hd">
+          <view class="weui-label required">买入日期</view>
+        </view>
+        <view class="weui-cell__bd">
+          <picker mode="date" value="{{buyDate}}" start="2020-01-01" end="{{today}}" bindchange="onBuyDateChange">
+            <view class="weui-input">{{buyDate}}</view>
+          </picker>
+        </view>
+      </view>
+    </view>
+    
+    <view class="weui-cells__tips" wx:if="{{estimatedAmount}}">
+      <text>预计金额: ¥{{estimatedAmount}}</text>
+    </view>
+  </view>
+
+  <view class="error-message" wx:if="{{error}}">
+    {{error}}
+  </view>
+
+  <view class="button-group">
+    <button class="weui-btn" type="default" bindtap="handleCancel">取消</button>
+    <button class="weui-btn primary-btn" type="primary" bindtap="handleSubmit" loading="{{submitting}}" disabled="{{submitting}}">
+      {{submitting ? '提交中...' : '确认添加'}}
+    </button>
+  </view>
+</view>
