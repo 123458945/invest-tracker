@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "投资仪表板",
+  "usingComponents": {
+    "ec-canvas": "../../components/ec-canvas/ec-canvas"
+  }
+}

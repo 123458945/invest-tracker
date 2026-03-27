@@ -1,0 +1,140 @@
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30rpx;
+}
+
+.refresh-btn {
+  background-color: #1976d2;
+  color: #ffffff;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20rpx;
+  margin-bottom: 30rpx;
+}
+
+.stat-card {
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+}
+
+.stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.stat-title {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.stat-icon {
+  font-size: 32rpx;
+}
+
+.stat-value {
+  display: block;
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 8rpx;
+}
+
+.stat-subtitle {
+  display: block;
+  font-size: 22rpx;
+  color: #999999;
+}
+
+.text-danger {
+  color: #d32f2f !important;
+}
+
+.text-success {
+  color: #2e7d32 !important;
+}
+
+.chart-card {
+  margin-bottom: 30rpx;
+}
+
+.card-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 20rpx;
+}
+
+.chart-container {
+  width: 100%;
+  height: 500rpx;
+}
+
+.ranking-section {
+  margin-top: 20rpx;
+}
+
+.ranking-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #666666;
+  margin-bottom: 16rpx;
+}
+
+.ranking-list {
+  background-color: #f9f9f9;
+  border-radius: 12rpx;
+  padding: 20rpx;
+}
+
+.ranking-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #eeeeee;
+}
+
+.ranking-item:last-child {
+  border-bottom: none;
+}
+
+.ranking-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.ranking-name {
+  font-size: 28rpx;
+  color: #333333;
+  font-weight: 500;
+}
+
+.ranking-code {
+  font-size: 24rpx;
+  color: #999999;
+  margin-top: 4rpx;
+}
+
+.ranking-right {
+  font-size: 28rpx;
+  font-weight: bold;
+}
+
+.empty-action {
+  display: inline-block;
+  margin-top: 20rpx;
+  padding: 16rpx 32rpx;
+  background-color: #1976d2;
+  color: #ffffff;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+}

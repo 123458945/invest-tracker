@@ -1,0 +1,47 @@
+<view class="container login-container">
+  <view class="login-header">
+    <text class="login-title">InvestTracker</text>
+    <text class="login-subtitle">个人投资管理系统</text>
+  </view>
+
+  <view class="login-form">
+    <view class="weui-cells weui-cells_after-title">
+      <view class="weui-cell weui-cell_input">
+        <view class="weui-cell__hd">
+          <view class="weui-label">邮箱</view>
+        </view>
+        <view class="weui-cell__bd">
+          <input class="weui-input" placeholder="请输入邮箱" value="{{email}}" bindinput="onEmailInput" type="text" />
+        </view>
+      </view>
+      <view class="weui-cell weui-cell_input">
+        <view class="weui-cell__hd">
+          <view class="weui-label">密码</view>
+        </view>
+        <view class="weui-cell__bd">
+          <input class="weui-input" placeholder="请输入密码" value="{{password}}" bindinput="onPasswordInput" password="{{!showPassword}}" />
+        </view>
+        <view class="weui-cell__ft">
+          <icon type="{{showPassword ? 'waiting' : 'clear'}}" size="23" bindtap="togglePassword" />
+        </view>
+      </view>
+    </view>
+
+    <view class="error-message" wx:if="{{error}}">
+      {{error}}
+    </view>
+
+    <view class="success-message" wx:if="{{success}}">
+      {{success}}
+    </view>
+
+    <button class="weui-btn login-btn" type="primary" bindtap="handleLogin" loading="{{loading}}" disabled="{{loading}}">
+      {{loading ? '登录中...' : '登录'}}
+    </button>
+
+    <view class="login-footer">
+      <text>还没有账号？</text>
+      <navigator url="/pages/register/register" class="register-link">立即注册</navigator>
+    </view>
+  </view>
+</view>

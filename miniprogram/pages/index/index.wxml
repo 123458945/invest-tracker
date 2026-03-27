@@ -1,0 +1,106 @@
+<view class="container">
+  <view class="page-header">
+    <text class="page-title">投资仪表板</text>
+    <button class="refresh-btn" bindtap="handleUpdatePrices" loading="{{updating}}" disabled="{{updating || holdings.length === 0}}" size="mini">
+      {{updating ? '更新中...' : '更新价格'}}
+    </button>
+  </view>
+
+  <view class="error-message" wx:if="{{error}}">
+    {{error}}
+  </view>
+
+  <!-- 统计卡片 -->
+  <view class="stats-grid">
+    <view class="stat-card">
+      <view class="stat-header">
+        <text class="stat-title">总资产</text>
+        <text class="stat-icon">💰</text>
+      </view>
+      <text class="stat-value">{{totalMarketValue}}</text>
+      <text class="stat-subtitle">{{holdings.length > 0 ? holdings.length + ' 个持仓' : '暂无持仓'}}</text>
+    </view>
+
+    <view class="stat-card">
+      <view class="stat-header">
+        <text class="stat-title">总盈亏</text>
+        <text class="stat-icon">{{totalProfitLoss >= 0 ? '📈' : '📉'}}</text>
+      </view>
+      <text class="stat-value {{totalProfitLoss >= 0 ? 'text-danger' : 'text-success'}}">{{totalProfitLoss}}</text>
+      <text class="stat-subtitle {{totalProfitLoss >= 0 ? 'text-danger' : 'text-success'}}">{{totalProfitLossRate}}</text>
+    </view>
+
+    <view class="stat-card">
+      <view class="stat-header">
+        <text class="stat-title">盈利持仓</text>
+        <text class="stat-icon">📈</text>
+      </view>
+      <text class="stat-value text-danger">{{profitCount}}</text>
+      <text class="stat-subtitle">{{profitCount > 0 ? '盈利中' : '无'}}</text>
+    </view>
+
+    <view class="stat-card">
+      <view class="stat-header">
+        <text class="stat-title">亏损持仓</text>
+        <text class="stat-icon">📉</text>
+      </view>
+      <text class="stat-value text-success">{{lossCount}}</text>
+      <text class="stat-subtitle">{{lossCount > 0 ? '亏损中' : '无'}}</text>
+    </view>
+  </view>
+
+  <!-- 资产配置图表 -->
+  <view class="card chart-card" wx:if="{{assetAllocation.length > 0}}">
+    <view class="card-title">资产配置</view>
+    <view class="chart-container">
+      <ec-canvas id="assetChart" canvas-id="assetChart" ec="{{ assetChartEc }}"></ec-canvas>
+    </view>
+  </view>
+
+  <!-- 盈亏排行 -->
+  <view class="card" wx:if="{{topGainers.length > 0 || topLosers.length > 0}}">
+    <view class="card-title">盈亏排行</view>
+    
+    <view class="ranking-section" wx:if="{{topGainers.length > 0}}">
+      <view class="ranking-title">涨幅榜</view>
+      <view class="ranking-list">
+        <view class="ranking-item" wx:for="{{topGainers}}" wx:key="_id">
+          <view class="ranking-left">
+            <text class="ranking-name">{{item.stockName}}</text>
+            <text class="ranking-code">{{item.stockCode}}</text>
+          </view>
+          <view class="ranking-right text-danger">
+            <text>+{{item.profitLossRate}}%</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="ranking-section" wx:if="{{topLosers.length > 0}}">
+      <view class="ranking-title">跌幅榜</view>
+      <view class="ranking-list">
+        <view class="ranking-item" wx:for="{{topLosers}}" wx:key="_id">
+          <view class="ranking-left">
+            <text class="ranking-name">{{item.stockName}}</text>
+            <text class="ranking-code">{{item.stockCode}}</text>
+          </view>
+          <view class="ranking-right text-success">
+            <text>{{item.profitLossRate}}%</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{!loading && holdings.length === 0}}">
+    <view class="empty-icon">📊</view>
+    <view class="empty-text">暂无持仓数据</view>
+    <navigator url="/pages/holdings/holdings" class="empty-action">添加持仓</navigator>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+</view>
