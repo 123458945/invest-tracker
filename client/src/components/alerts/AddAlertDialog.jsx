@@ -299,7 +299,7 @@ const AddAlertDialog = ({ open, onClose, onSubmit }) => {
           )}
 
           {activeTab === 1 && (
-            <Grid item xs={12} sx={{ mb: 2 }}>
+            <Box sx={{ mb: 2 }}>
               <StockAutocomplete
                 value={selectedStock}
                 onChange={handleStockChange}
@@ -308,12 +308,12 @@ const AddAlertDialog = ({ open, onClose, onSubmit }) => {
                 error={!!errors.stockCode}
                 helperText={errors.stockCode}
               />
-            </Grid>
+            </Box>
           )}
-          
+
           {selectedStock && (
-            <Grid item xs={12}>
-              <Box 
+            <Box>
+              <Box
                 sx={{ 
                   p: 2, 
                   bgcolor: 'grey.50', 
@@ -373,7 +373,7 @@ const AddAlertDialog = ({ open, onClose, onSubmit }) => {
                   </Box>
                 )}
               </Box>
-            </Grid>
+            </Box>
           )}
 
           <Grid container spacing={2}>

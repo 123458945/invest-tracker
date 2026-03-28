@@ -7,10 +7,6 @@ import {
   ListItemIcon,
   Chip,
 } from '@mui/material';
-import {
-  TrendingUp,
-  TrendingDown,
-} from '@mui/icons-material';
 
 const ProfitLossRanking = ({ topGainers = [], topLosers = [], loading }) => {
   const formatCurrency = (value) => {
@@ -54,11 +50,10 @@ const ProfitLossRanking = ({ topGainers = [], topLosers = [], loading }) => {
                   <Chip
                     label={index + 1}
                     size="small"
-                    sx={{ 
+                    sx={{
                       bgcolor: 'profit.main',
                       color: 'white',
                     }}
-                    variant="outlined"
                   />
                 </ListItemIcon>
                 <ListItemText
@@ -93,11 +88,10 @@ const ProfitLossRanking = ({ topGainers = [], topLosers = [], loading }) => {
                   <Chip
                     label={index + 1}
                     size="small"
-                    sx={{ 
+                    sx={{
                       bgcolor: 'loss.main',
                       color: 'white',
                     }}
-                    variant="outlined"
                   />
                 </ListItemIcon>
                 <ListItemText

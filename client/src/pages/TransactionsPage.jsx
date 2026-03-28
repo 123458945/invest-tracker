@@ -95,7 +95,6 @@ const TransactionsPage = () => {
     }).format(value || 0);
   };
 
-  const uniqueStockCodes = [...new Set(transactions.map((t) => t.stockCode))];
   const displayTransactions = tabValue === 0 ? transactions : deletedTransactions;
 
   return (

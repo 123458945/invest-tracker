@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CircularProgress, Box, Typography, Button, Alert, Grid, Card, CardContent, Snackbar, Paper } from '@mui/material';
+import { Box, Typography, Button, Alert, Grid, Card, CardContent, Snackbar, Paper } from '@mui/material';
 import { Refresh as RefreshIcon, AccountBalance, TrendingUp, TrendingDown } from '@mui/icons-material';
 import { holdingsApi } from '../api/holdings.api';
 import { stocksApi } from '../api/stocks.api';
@@ -7,9 +7,6 @@ import { analyticsApi } from '../api/analytics.api';
 import { alertsApi } from '../api/alerts.api';
 import AssetAllocationChart from '../components/charts/AssetAllocationChart';
 import ProfitLossRanking from '../components/charts/ProfitLossRanking';
-import ConfirmDialog from '../components/common/ConfirmDialog';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import EmptyState from '../components/common/EmptyState';
 
 const StatCard = ({ title, value, icon, color, subtitle }) => (
   <Paper
@@ -56,6 +53,7 @@ const DashboardPage = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
+      setError('');
       const [holdingsRes, allocationRes, performersRes, alertsRes] = await Promise.all([
         holdingsApi.getAll(),
         analyticsApi.getAssetAllocation(),
@@ -208,7 +206,7 @@ const DashboardPage = () => {
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
       >
         <Alert severity={snackbar.severity} sx={{ width: '100%' }}>
           {snackbar.message}

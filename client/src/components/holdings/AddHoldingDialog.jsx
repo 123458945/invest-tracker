@@ -41,16 +41,16 @@ const AddHoldingDialog = ({ open, onClose, onSubmit }) => {
   const [priceSource, setPriceSource] = useState('');
   const [nonTradingDayWarning, setNonTradingDayWarning] = useState(null);
 
-  const fetchHistoryPrice = async (stockCode, market, dateStr) => {
+  const fetchHistoryPrice = async (stockCode, market, dateStr, fallbackPrice = 0) => {
     console.log('fetchHistoryPrice called:', { stockCode, market, dateStr });
     if (!stockCode || !market || !dateStr) {
       console.log('Missing params, returning early');
       return;
     }
-    
+
     setLoadingPrice(true);
     setNonTradingDayWarning(null);
-    
+
     try {
       console.log('Calling API with params:', { stockCode, market, dateStr });
       const response = await stocksApi.getHistoryPrice(stockCode, market, dateStr);
@@ -63,8 +63,8 @@ const AddHoldingDialog = ({ open, onClose, onSubmit }) => {
       }
     } catch (err) {
       console.error('fetchHistoryPrice error:', err);
-      if (currentPrice > 0) {
-        setFormData(prev => ({ ...prev, buyPrice: currentPrice.toString() }));
+      if (fallbackPrice > 0) {
+        setFormData(prev => ({ ...prev, buyPrice: fallbackPrice.toString() }));
         setPriceSource('当前价格');
         setNonTradingDayWarning('所选日期无历史数据，已使用当前价格。如需准确买入价，请手动修改。');
       }
@@ -89,25 +89,25 @@ const AddHoldingDialog = ({ open, onClose, onSubmit }) => {
     
     if (newDate && stockFound && formData.stockCode && formData.market) {
       const dateStr = newDate.format('YYYY-MM-DD');
-      fetchHistoryPrice(formData.stockCode, formData.market, dateStr);
+      fetchHistoryPrice(formData.stockCode, formData.market, dateStr, currentPrice);
     }
   };
 
   const handleStockCodeChange = async (e) => {
     const value = e.target.value.replace(/\D/g, '').slice(0, 6);
-    setFormData({ 
-      ...formData, 
-      stockCode: value, 
-      stockName: '', 
-      market: 'sh', 
+    setFormData(prev => ({
+      ...prev,
+      stockCode: value,
+      stockName: '',
+      market: 'sh',
       assetType: 'stock',
       buyPrice: '',
-    });
+    }));
     setStockFound(false);
     setCurrentPrice(0);
     setPriceSource('');
     setNonTradingDayWarning(null);
-    setErrors({ ...errors, stockCode: '' });
+    setErrors(prev => ({ ...prev, stockCode: '' }));
 
     if (value.length === 6) {
       setSearching(true);
@@ -117,18 +117,17 @@ const AddHoldingDialog = ({ open, onClose, onSubmit }) => {
           const stock = response.data.data[0];
           const newMarket = stock.market || 'sh';
           
-          setFormData(prev => {
-            if (prev.buyDate) {
-              const dateStr = prev.buyDate.format('YYYY-MM-DD');
-              fetchHistoryPrice(value, newMarket, dateStr);
-            }
-            return {
-              ...prev,
-              stockName: stock.stockName,
-              market: newMarket,
-              assetType: stock.assetType || 'stock',
-            };
-          });
+          setFormData(prev => ({
+            ...prev,
+            stockName: stock.stockName,
+            market: newMarket,
+            assetType: stock.assetType || 'stock',
+          }));
+
+          if (formData.buyDate) {
+            const dateStr = formData.buyDate.format('YYYY-MM-DD');
+            fetchHistoryPrice(value, newMarket, dateStr, stock.currentPrice || 0);
+          }
           setCurrentPrice(stock.currentPrice || 0);
           setStockFound(true);
         } else {
@@ -144,31 +143,33 @@ const AddHoldingDialog = ({ open, onClose, onSubmit }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    setErrors({ ...errors, [name]: '' });
+    setFormData(prev => ({ ...prev, [name]: value }));
+    setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
   const handleBuyPriceChange = (e) => {
     const value = e.target.value;
     if (/^\d*\.?\d*$/.test(value) || value === '') {
-      setFormData({ ...formData, buyPrice: value });
+      setFormData(prev => ({ ...prev, buyPrice: value }));
       setPriceSource('手动输入');
       setNonTradingDayWarning(null);
-      setErrors({ ...errors, buyPrice: '' });
+      setErrors(prev => ({ ...prev, buyPrice: '' }));
     }
   };
 
   const handleInputTypeChange = (e, newType) => {
     if (newType) {
-      setFormData({ ...formData, inputType: newType, amount: '', quantity: '' });
-      setErrors({ ...errors, amount: '', quantity: '' });
+      setFormData(prev => ({ ...prev, inputType: newType, amount: '', quantity: '' }));
+      setErrors(prev => ({ ...prev, amount: '', quantity: '' }));
     }
   };
 
   const buyPrice = parseFloat(formData.buyPrice) || 0;
   
   const calculatedQuantity = formData.inputType === 'amount' && buyPrice > 0 && formData.amount
-    ? Math.floor(parseFloat(formData.amount) / buyPrice)
+    ? (formData.assetType === 'fund'
+        ? parseFloat((parseFloat(formData.amount) / buyPrice).toFixed(2))
+        : Math.floor(parseFloat(formData.amount) / buyPrice))
     : 0;
 
   const calculatedAmount = formData.inputType === 'quantity' && buyPrice > 0 && formData.quantity
@@ -178,8 +179,8 @@ const AddHoldingDialog = ({ open, onClose, onSubmit }) => {
   const validate = () => {
     const newErrors = {};
     if (!formData.stockCode) newErrors.stockCode = '股票代码不能为空';
-    if (formData.stockCode.length !== 6) newErrors.stockCode = '股票代码为6位';
-    if (!stockFound) newErrors.stockCode = '请输入有效的股票代码';
+    else if (formData.stockCode.length !== 6) newErrors.stockCode = '股票代码为6位';
+    else if (!stockFound) newErrors.stockCode = '请输入有效的股票代码';
     
     if (!formData.buyDate) {
       newErrors.buyDate = '请选择买入日期';
@@ -217,7 +218,7 @@ const AddHoldingDialog = ({ open, onClose, onSubmit }) => {
         quantity,
         buyPrice,
         buyDate: formData.buyDate.format('YYYY-MM-DD'),
-        currentPrice: buyPrice,
+        currentPrice: currentPrice || buyPrice,
       });
     }
   };

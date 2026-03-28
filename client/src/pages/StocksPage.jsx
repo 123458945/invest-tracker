@@ -20,7 +20,6 @@ import { stocksApi } from '../api/stocks.api';
 import StockSearch from '../components/stocks/StockSearch';
 import StockCard from '../components/stocks/StockCard';
 import KLineChart from '../components/stocks/KLineChart';
-import MAChart from '../components/stocks/MAChart';
 
 function TabPanel({ children, value, index }) {
   return (
@@ -64,6 +63,8 @@ const StocksPage = () => {
       const response = await stocksApi.updateHoldings();
       if (response.data.success) {
         setSnackbar({ open: true, message: '持仓价格更新成功', severity: 'success' });
+      } else {
+        setSnackbar({ open: true, message: response.data.message || '更新失败', severity: 'error' });
       }
     } catch (err) {
       setSnackbar({ open: true, message: '更新失败，请稍后重试', severity: 'error' });
@@ -97,6 +98,7 @@ const StocksPage = () => {
       }
     } catch (err) {
       console.error('获取股票数据失败:', err);
+      setSnackbar({ open: true, message: '获取股票数据失败', severity: 'error' });
     } finally {
       setKLineLoading(false);
       setMaLoading(false);

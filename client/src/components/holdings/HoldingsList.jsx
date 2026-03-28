@@ -19,7 +19,6 @@ import {
   TrendingDown,
   Sell as SellIcon,
 } from '@mui/icons-material';
-import { format } from 'date-fns';
 
 const HoldingsList = ({ holdings, onEdit, onDelete, onSell }) => {
   const formatCurrency = (value) => {
@@ -30,7 +29,8 @@ const HoldingsList = ({ holdings, onEdit, onDelete, onSell }) => {
   };
 
   const formatPercent = (value) => {
-    return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
+    const v = value ?? 0;
+    return `${v > 0 ? '+' : ''}${v.toFixed(2)}%`;
   };
 
   return (

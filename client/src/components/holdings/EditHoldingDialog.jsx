@@ -11,6 +11,7 @@ import {
   CircularProgress,
   InputAdornment,
   Alert,
+  Typography,
 } from '@mui/material';
 import { Info as InfoIcon } from '@mui/icons-material';
 
@@ -30,20 +31,21 @@ const EditHoldingDialog = ({ open, onClose, onSubmit, holding }) => {
         quantity: holding.quantity?.toString() || '',
         notes: holding.notes || '',
       });
+      setErrors({});
     }
   }, [holding]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    setErrors({ ...errors, [name]: '' });
+    setFormData(prev => ({ ...prev, [name]: value }));
+    setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
   const handleNumberChange = (e) => {
     const { name, value } = e.target;
     if (/^\d*\.?\d*$/.test(value) || value === '') {
-      setFormData({ ...formData, [name]: value });
-      setErrors({ ...errors, [name]: '' });
+      setFormData(prev => ({ ...prev, [name]: value }));
+      setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
 
@@ -156,7 +158,7 @@ const EditHoldingDialog = ({ open, onClose, onSubmit, holding }) => {
                 InputProps={{
                   endAdornment: <InputAdornment position="end">{holding.market === 'fund' ? '份' : '股'}</InputAdornment>,
                 }}
-                inputProps={{ step: holding.market === 'fund' ? 100 : 100, min: 0 }}
+                inputProps={{ step: holding.market === 'fund' ? 1 : 100, min: 0 }}
               />
             </Grid>
 

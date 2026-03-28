@@ -30,35 +30,34 @@ const SellHoldingDialog = ({ open, holding, onClose, onSubmit }) => {
   const [priceLoading, setPriceLoading] = useState(false);
 
   useEffect(() => {
-    if (holding && open) {
-      setFormData({
-        quantity: holding.quantity || '',
-        sellPrice: holding.currentPrice || '',
-        sellDate: dayjs(),
-        notes: '',
-      });
-      fetchCurrentPrice();
-    }
-  }, [holding, open]);
+    if (!holding || !open) return;
 
-  const fetchCurrentPrice = async () => {
-    if (!holding) return;
-    
-    setPriceLoading(true);
-    try {
-      const response = await stocksApi.getCurrentPrice(holding.stockCode, holding.market);
-      if (response.data.data) {
-        setFormData(prev => ({
-          ...prev,
-          sellPrice: response.data.data.price || prev.sellPrice,
-        }));
+    setFormData({
+      quantity: holding.quantity || '',
+      sellPrice: holding.currentPrice || '',
+      sellDate: dayjs(),
+      notes: '',
+    });
+
+    const fetchCurrentPrice = async () => {
+      setPriceLoading(true);
+      try {
+        const response = await stocksApi.getCurrentPrice(holding.stockCode, holding.market);
+        if (response.data.data) {
+          setFormData(prev => ({
+            ...prev,
+            sellPrice: response.data.data.price || prev.sellPrice,
+          }));
+        }
+      } catch (error) {
+        console.error('获取当前价格失败:', error);
+      } finally {
+        setPriceLoading(false);
       }
-    } catch (error) {
-      console.error('获取当前价格失败:', error);
-    } finally {
-      setPriceLoading(false);
-    }
-  };
+    };
+
+    fetchCurrentPrice();
+  }, [holding, open]);
 
   const validate = () => {
     const newErrors = {};
@@ -228,7 +227,7 @@ const SellHoldingDialog = ({ open, holding, onClose, onSubmit }) => {
                 {realizedProfit >= 0 ? '+' : ''}¥{realizedProfit.toFixed(2)}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                = (卖出价 ¥{formData.sellPrice} - 成本价 ¥{holding.avgBuyPrice?.toFixed(4)}) × {formData.quantity}份
+                = (卖出价 ¥{formData.sellPrice} - 成本价 ¥{holding.avgBuyPrice?.toFixed(4)}) × {formData.quantity}{holding.market === 'fund' ? '份' : '股'}
               </Typography>
             </Box>
           )}

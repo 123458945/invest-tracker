@@ -24,8 +24,8 @@ const ConfirmDialog = ({
         <DialogContentText>{message}</DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onCancel}>{cancelText}</Button>
-        <Button onClick={onConfirm} color={confirmColor} variant="contained">
+        <Button onClick={onCancel ?? (() => {})}>{cancelText}</Button>
+        <Button onClick={onConfirm ?? (() => {})} color={confirmColor} variant="contained">
           {confirmText}
         </Button>
       </DialogActions>

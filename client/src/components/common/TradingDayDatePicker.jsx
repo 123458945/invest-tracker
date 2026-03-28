@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
 
 const CustomPickersDay = styled(PickersDay, {
-  shouldForwardProp: (prop) => prop !== 'isTradingDay',
+  shouldForwardProp: (prop) => prop !== 'isTradingDay' && prop !== 'selected',
 })(({ theme, isTradingDay, selected }) => ({
   ...(isTradingDay && !selected && {
     backgroundColor: theme.palette.mode === 'light' 
@@ -96,23 +96,24 @@ export const getTradingDayStatus = (date) => {
   return { isTrading: true, reason: '正常交易日' };
 };
 
+const TradingDay = (props) => {
+  const { day, ...other } = props;
+  const today = dayjs().startOf('day');
+  const isFuture = day.startOf('day').isAfter(today);
+  const trading = !isFuture && isTradingDay(day);
+
+  return (
+    <CustomPickersDay
+      {...other}
+      day={day}
+      isTradingDay={trading}
+      disabled={other.disabled || isFuture}
+    />
+  );
+};
+
 const TradingDayDatePicker = ({ value, onChange, label, error, helperText, disabled, minDate, maxDate }) => {
   const [open, setOpen] = useState(false);
-
-  const renderDay = (day, selectedDays, pickersDayProps) => {
-    const dayStart = day.startOf('day');
-    const today = dayjs().startOf('day');
-    const isFuture = dayStart.isAfter(today);
-    const trading = !isFuture && isTradingDay(day);
-    
-    return (
-      <CustomPickersDay
-        {...pickersDayProps}
-        isTradingDay={trading}
-        disabled={pickersDayProps.disabled || isFuture}
-      />
-    );
-  };
 
   const handleDateChange = (newValue) => {
     if (newValue && !isTradingDay(newValue)) {
@@ -135,7 +136,7 @@ const TradingDayDatePicker = ({ value, onChange, label, error, helperText, disab
         disabled={disabled}
         minDate={minDate}
         maxDate={maxDate || dayjs()}
-        renderDay={renderDay}
+        slots={{ day: TradingDay }}
         slotProps={{
           textField: {
             fullWidth: true,

@@ -77,7 +77,7 @@ const HoldingsPage = () => {
         const result = response.data.data;
         setSnackbar({ 
           open: true, 
-          message: `卖出成功！已实现盈亏: ¥${result.realizedProfit.toFixed(2)}`, 
+          message: `卖出成功！已实现盈亏: ¥${(result.realizedProfit ?? 0).toFixed(2)}`,
           severity: 'success' 
         });
       }
@@ -283,7 +283,7 @@ const HoldingsPage = () => {
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
       >
         <Alert severity={snackbar.severity} sx={{ width: '100%' }}>
           {snackbar.message}

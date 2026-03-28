@@ -200,9 +200,9 @@ const UserSettingsPage = () => {
                   variant="contained"
                   fullWidth
                   startIcon={<SaveIcon />}
-                  disabled={loading}
+                  disabled
                 >
-                  {loading ? <CircularProgress size={24} /> : '保存更改'}
+                  {'保存更改'}
                 </Button>
               </Grid>
             </Grid>

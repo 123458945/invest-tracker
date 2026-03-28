@@ -18,8 +18,6 @@ import {
   NotificationsActive,
   NotificationsOff,
 } from '@mui/icons-material';
-import { format } from 'date-fns';
-
 const ALERT_TYPE_LABELS = {
   price_above: '价格高于',
   price_below: '价格低于',

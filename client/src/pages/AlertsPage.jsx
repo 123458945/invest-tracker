@@ -5,6 +5,7 @@ import {
   Button,
   Alert,
   Snackbar,
+  CircularProgress,
 } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import { alertsApi } from '../api/alerts.api';
@@ -76,10 +77,14 @@ const AlertsPage = () => {
 
   const handleDelete = async (alert) => {
     try {
-      await alertsApi.delete(alert._id);
-      setAlerts(alerts.filter((a) => a._id !== alert._id));
-      setConfirmDialog({ open: false, alert: null });
-      setSnackbar({ open: true, message: '删除提醒成功', severity: 'success' });
+      const response = await alertsApi.delete(alert._id);
+      if (response.data.success) {
+        setAlerts(alerts.filter((a) => a._id !== alert._id));
+        setConfirmDialog({ open: false, alert: null });
+        setSnackbar({ open: true, message: '删除提醒成功', severity: 'success' });
+      } else {
+        setSnackbar({ open: true, message: response.data.message || '删除失败', severity: 'error' });
+      }
     } catch (err) {
       setSnackbar({ open: true, message: '删除失败', severity: 'error' });
     }
@@ -110,12 +115,18 @@ const AlertsPage = () => {
         </Button>
       </Box>
 
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <CircularProgress />
+        </Box>
+      ) : (
       <AlertsList
         alerts={alerts}
         onToggle={handleToggle}
         onDelete={(alert) => setConfirmDialog({ open: true, alert })}
         onReset={handleReset}
       />
+      )}
 
       <AddAlertDialog
         open={dialogOpen}

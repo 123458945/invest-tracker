@@ -41,14 +41,14 @@ const RegisterPage = () => {
     setLoading(true);
     setError('');
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('两次输入的密码不一致');
+    if (formData.password.length < 6) {
+      setError('密码长度至少6位');
       setLoading(false);
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('密码长度至少6位');
+    if (formData.password !== formData.confirmPassword) {
+      setError('两次输入的密码不一致');
       setLoading(false);
       return;
     }
@@ -105,6 +105,7 @@ const RegisterPage = () => {
               onChange={handleChange}
               margin="normal"
               required
+              autoComplete="username"
             />
             <TextField
               fullWidth
@@ -126,6 +127,7 @@ const RegisterPage = () => {
               onChange={handleChange}
               margin="normal"
               required
+              autoComplete="new-password"
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -148,6 +150,7 @@ const RegisterPage = () => {
               onChange={handleChange}
               margin="normal"
               required
+              autoComplete="new-password"
             />
             <Button
               type="submit"

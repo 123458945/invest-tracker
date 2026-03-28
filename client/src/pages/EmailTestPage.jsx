@@ -28,6 +28,7 @@ import {
   ExpandLess as ExpandLessIcon,
   Save as SaveIcon,
 } from '@mui/icons-material';
+import MenuItem from '@mui/material/MenuItem';
 import { emailApi } from '../api/email.api';
 
 const SMTP_SERVICES = [
@@ -198,9 +199,9 @@ const EmailTestPage = () => {
                     helperText="选择邮箱服务提供商"
                   >
                     {SMTP_SERVICES.map((s) => (
-                      <option key={s.value} value={s.value}>
+                      <MenuItem key={s.value} value={s.value}>
                         {s.label} ({s.value})
-                      </option>
+                      </MenuItem>
                     ))}
                   </TextField>
                 </Grid>

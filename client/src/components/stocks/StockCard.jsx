@@ -19,7 +19,8 @@ const StockCard = ({ stock, onClick }) => {
   };
 
   const formatPercent = (value) => {
-    return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
+    const v = value || 0;
+    return `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`;
   };
 
   const isUp = stock.changePercent >= 0;
