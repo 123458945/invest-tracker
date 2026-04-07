@@ -7,6 +7,7 @@ import { analyticsApi } from '../api/analytics.api';
 import { alertsApi } from '../api/alerts.api';
 import AssetAllocationChart from '../components/charts/AssetAllocationChart';
 import ProfitLossRanking from '../components/charts/ProfitLossRanking';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 
 const StatCard = ({ title, value, icon, color, subtitle }) => (
   <Paper

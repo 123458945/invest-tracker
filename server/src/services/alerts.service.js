@@ -220,3 +220,89 @@ export const updateLastCheckedService = async (id, currentPrice) => {
     currentPrice,
   });
 };
+
+/**
+ * 批量创建提醒（跳过重复）
+ * @param {string} userId
+ * @param {Array} items - [{ stockCode, stockName, market, alertType, targetValue, notes }]
+ * @returns {{ created: number, skipped: number, alerts: Array, skippedItems: Array }}
+ */
+export const batchCreateAlertsService = async (userId, items) => {
+  const created = [];
+  const skippedItems = [];
+
+  for (const item of items) {
+    // 检查是否已存在相同提醒
+    const existing = await Alert.findOne({
+      userId,
+      stockCode: item.stockCode,
+      market: item.market,
+      alertType: item.alertType,
+      targetValue: item.targetValue,
+      isActive: true,
+    });
+
+    if (existing) {
+      skippedItems.push({
+        stockCode: item.stockCode,
+        stockName: item.stockName,
+        reason: '已存在相同提醒',
+      });
+      continue;
+    }
+
+    try {
+      const alert = await createAlertService(userId, item);
+      created.push(alert);
+    } catch (error) {
+      skippedItems.push({
+        stockCode: item.stockCode,
+        stockName: item.stockName,
+        reason: error.message,
+      });
+    }
+  }
+
+  return {
+    created: created.length,
+    skipped: skippedItems.length,
+    alerts: created,
+    skippedItems,
+  };
+};
+
+/**
+ * 批量操作提醒
+ * @param {string} userId
+ * @param {Array} ids
+ * @param {'activate'|'pause'|'delete'} action
+ */
+export const batchUpdateAlertsService = async (userId, ids, action) => {
+  if (!ids || ids.length === 0) {
+    throw new Error('请选择至少一条提醒');
+  }
+
+  let result;
+  switch (action) {
+    case 'activate':
+      result = await Alert.updateMany(
+        { _id: { $in: ids }, userId },
+        { isActive: true, isTriggered: false, triggeredAt: null }
+      );
+      return { action, matchedCount: result.matchedCount, modifiedCount: result.modifiedCount };
+
+    case 'pause':
+      result = await Alert.updateMany(
+        { _id: { $in: ids }, userId },
+        { isActive: false }
+      );
+      return { action, matchedCount: result.matchedCount, modifiedCount: result.modifiedCount };
+
+    case 'delete':
+      result = await Alert.deleteMany({ _id: { $in: ids }, userId });
+      return { action, deletedCount: result.deletedCount };
+
+    default:
+      throw new Error('无效的操作类型');
+  }
+};

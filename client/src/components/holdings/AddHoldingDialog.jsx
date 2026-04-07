@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -40,6 +40,28 @@ const AddHoldingDialog = ({ open, onClose, onSubmit }) => {
   const [currentPrice, setCurrentPrice] = useState(0);
   const [priceSource, setPriceSource] = useState('');
   const [nonTradingDayWarning, setNonTradingDayWarning] = useState(null);
+
+  // dialog 打开时重置表单（解决第二次打开残留上次数据的问题）
+  useEffect(() => {
+    if (open) {
+      setFormData({
+        stockCode: '',
+        stockName: '',
+        market: 'sh',
+        assetType: 'stock',
+        inputType: 'amount',
+        amount: '',
+        quantity: '',
+        buyDate: dayjs(),
+        buyPrice: '',
+      });
+      setErrors({});
+      setStockFound(false);
+      setCurrentPrice(0);
+      setPriceSource('');
+      setNonTradingDayWarning(null);
+    }
+  }, [open]);
 
   const fetchHistoryPrice = async (stockCode, market, dateStr, fallbackPrice = 0) => {
     console.log('fetchHistoryPrice called:', { stockCode, market, dateStr });
