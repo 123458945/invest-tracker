@@ -1,0 +1,113 @@
+<view class="container">
+  <view wx:if="{{loading}}" class="loading">加载中...</view>
+  
+  <view wx:else class="form">
+    <view wx:if="{{error}}" class="error-msg">{{error}}</view>
+    
+    <view class="form-item">
+      <text class="label">股票代码 *</text>
+      <input 
+        class="input" 
+        type="text" 
+        maxlength="6"
+        placeholder="请输入6位股票代码"
+        value="{{stockCode}}"
+        bindinput="onStockCodeInput"
+      />
+    </view>
+
+    <view class="form-item">
+      <text class="label">股票名称 *</text>
+      <input 
+        class="input" 
+        type="text" 
+        placeholder="请输入股票名称"
+        value="{{stockName}}"
+        bindinput="onStockNameInput"
+      />
+    </view>
+
+    <view class="form-item">
+      <text class="label">市场</text>
+      <picker 
+        mode="selector" 
+        range="{{markets}}" 
+        range-key="label"
+        value="{{marketIndex}}"
+        bindchange="onMarketChange"
+      >
+        <view class="picker">
+          {{markets[marketIndex].label}}
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-item">
+      <text class="label">资产类型</text>
+      <picker 
+        mode="selector" 
+        range="{{assetTypes}}" 
+        range-key="label"
+        value="{{assetTypeIndex}}"
+        bindchange="onAssetTypeChange"
+      >
+        <view class="picker">
+          {{assetTypes[assetTypeIndex].label}}
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-item">
+      <text class="label">持仓数量 *</text>
+      <input 
+        class="input" 
+        type="digit" 
+        placeholder="请输入持仓数量"
+        value="{{quantity}}"
+        bindinput="onQuantityInput"
+      />
+    </view>
+
+    <view class="form-item">
+      <text class="label">买入均价 *</text>
+      <input 
+        class="input" 
+        type="digit" 
+        placeholder="请输入买入均价"
+        value="{{avgBuyPrice}}"
+        bindinput="onBuyPriceInput"
+      />
+    </view>
+
+    <view class="form-item">
+      <text class="label">买入日期 *</text>
+      <picker 
+        mode="date" 
+        value="{{buyDate}}"
+        start="2000-01-01"
+        end="{{today}}"
+        bindchange="onBuyDateChange"
+      >
+        <view class="picker">
+          {{buyDate || '请选择日期'}}
+        </view>
+      </picker>
+    </view>
+
+    <view wx:if="{{estimatedAmount}}" class="form-item">
+      <text class="label">估算金额</text>
+      <view class="estimated-amount">¥{{estimatedAmount}}</view>
+    </view>
+
+    <view class="button-group">
+      <button class="btn btn-cancel" bindtap="handleCancel">取消</button>
+      <button 
+        class="btn btn-submit" 
+        bindtap="handleSubmit"
+        disabled="{{submitting}}"
+      >
+        {{submitting ? '提交中...' : '保存'}}
+      </button>
+    </view>
+  </view>
+</view>

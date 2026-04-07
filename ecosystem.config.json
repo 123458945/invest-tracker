@@ -1,0 +1,17 @@
+{
+  "apps": [
+    {
+      "name": "invest-tracker",
+      "script": "src/server.js",
+      "cwd": "/opt/workspace/myproject/invest-tracker/server",
+      "env": {
+        "NODE_ENV": "production"
+      },
+      "instances": 1,
+      "autorestart": true,
+      "max_restarts": 10,
+      "watch": false,
+      "max_memory_restart": "500M"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+.form-section {
+  margin-bottom: 40rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333333;
+  padding: 20rpx;
+  margin-bottom: 10rpx;
+}
+
+.required::before {
+  content: '*';
+  color: #d32f2f;
+  margin-right: 4rpx;
+}
+
+.weui-label {
+  width: 160rpx;
+}
+
+.weui-select {
+  height: 48rpx;
+  line-height: 48rpx;
+}
+
+.searching-text {
+  font-size: 24rpx;
+  color: #1976d2;
+}
+
+.weui-cells__tips {
+  padding: 16rpx 20rpx;
+  font-size: 26rpx;
+  color: #666666;
+  background-color: #f5f5f5;
+  border-radius: 8rpx;
+  margin-top: 10rpx;
+}
+
+.button-group {
+  display: flex;
+  gap: 20rpx;
+  padding: 40rpx 20rpx;
+}
+
+.button-group .weui-btn {
+  flex: 1;
+}
+
+.primary-btn {
+  background-color: #1976d2 !important;
+}
+
+.error-message {
+  margin: 20rpx;
+}

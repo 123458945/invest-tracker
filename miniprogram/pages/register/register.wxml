@@ -1,0 +1,59 @@
+<view class="container register-container">
+  <view class="register-header">
+    <text class="register-title">注册账号</text>
+    <text class="register-subtitle">创建您的投资管理账户</text>
+  </view>
+
+  <view class="register-form">
+    <view class="weui-cells weui-cells_after-title">
+      <view class="weui-cell weui-cell_input">
+        <view class="weui-cell__hd">
+          <view class="weui-label">用户名</view>
+        </view>
+        <view class="weui-cell__bd">
+          <input class="weui-input" placeholder="请输入用户名" value="{{username}}" bindinput="onUsernameInput" type="text" />
+        </view>
+      </view>
+      <view class="weui-cell weui-cell_input">
+        <view class="weui-cell__hd">
+          <view class="weui-label">邮箱</view>
+        </view>
+        <view class="weui-cell__bd">
+          <input class="weui-input" placeholder="请输入邮箱" value="{{email}}" bindinput="onEmailInput" type="text" />
+        </view>
+      </view>
+      <view class="weui-cell weui-cell_input">
+        <view class="weui-cell__hd">
+          <view class="weui-label">密码</view>
+        </view>
+        <view class="weui-cell__bd">
+          <input class="weui-input" placeholder="请输入密码" value="{{password}}" bindinput="onPasswordInput" password="{{!showPassword}}" />
+        </view>
+        <view class="weui-cell__ft">
+          <icon type="{{showPassword ? 'waiting' : 'clear'}}" size="23" bindtap="togglePassword" />
+        </view>
+      </view>
+      <view class="weui-cell weui-cell_input">
+        <view class="weui-cell__hd">
+          <view class="weui-label">确认密码</view>
+        </view>
+        <view class="weui-cell__bd">
+          <input class="weui-input" placeholder="请再次输入密码" value="{{confirmPassword}}" bindinput="onConfirmPasswordInput" password="{{!showPassword}}" />
+        </view>
+      </view>
+    </view>
+
+    <view class="error-message" wx:if="{{error}}">
+      {{error}}
+    </view>
+
+    <button class="weui-btn register-btn" type="primary" bindtap="handleRegister" loading="{{loading}}" disabled="{{loading}}">
+      {{loading ? '注册中...' : '注册'}}
+    </button>
+
+    <view class="register-footer">
+      <text>已有账号？</text>
+      <navigator url="/pages/login/login" class="login-link">立即登录</navigator>
+    </view>
+  </view>
+</view>

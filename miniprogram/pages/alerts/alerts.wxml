@@ -1,0 +1,67 @@
+<view class="container">
+  <view class="page-header">
+    <view class="header-content">
+      <text class="page-title">价格提醒</text>
+      <text class="page-subtitle" wx:if="{{alerts.length > 0}}">
+        监控中: {{activeCount}} | 已触发: {{triggeredCount}}
+      </text>
+    </view>
+    <button class="add-btn" bindtap="openAddDialog" size="mini">添加提醒</button>
+  </view>
+
+  <view class="error-message" wx:if="{{error}}">
+    {{error}}
+  </view>
+
+  <!-- 提醒列表 -->
+  <view class="alerts-list" wx:if="{{alerts.length > 0}}">
+    <view class="alert-item {{item.isTriggered ? 'triggered' : ''}} {{!item.isActive ? 'inactive' : ''}}" wx:for="{{alerts}}" wx:key="_id">
+      <view class="alert-header">
+        <view class="alert-info">
+          <text class="alert-name">{{item.stockName}}</text>
+          <text class="alert-code">{{item.stockCode}}</text>
+        </view>
+        <view class="alert-status">
+          <text class="status-badge {{item.isActive && !item.isTriggered ? 'active' : 'inactive'}}">
+            {{item.isTriggered ? '已触发' : (item.isActive ? '监控中' : '已暂停')}}
+          </text>
+        </view>
+      </view>
+
+      <view class="alert-details">
+        <view class="detail-row">
+          <text class="detail-label">提醒类型</text>
+          <text class="detail-value">{{item.alertType === 'price_above' ? '价格高于' : '价格低于'}} ¥{{item.targetPrice}}</text>
+        </view>
+        <view class="detail-row">
+          <text class="detail-label">当前价格</text>
+          <text class="detail-value">¥{{item.currentPrice || '--'}}</text>
+        </view>
+      </view>
+
+      <view class="alert-actions">
+        <button class="action-btn" bindtap="handleToggle" data-alert="{{item}}" size="mini">
+          {{item.isActive ? '暂停' : '启用'}}
+        </button>
+        <button class="action-btn" bindtap="handleReset" data-alert="{{item}}" size="mini" wx:if="{{item.isTriggered}}">
+          重置
+        </button>
+        <button class="action-btn delete" bindtap="handleDelete" data-alert="{{item}}" size="mini">
+          删除
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{!loading && alerts.length === 0}}">
+    <view class="empty-icon">🔔</view>
+    <view class="empty-text">暂无价格提醒</view>
+    <button class="empty-action" bindtap="openAddDialog">添加提醒</button>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+</view>

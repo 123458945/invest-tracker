@@ -1,0 +1,59 @@
+<!--普通加载模式-->
+<view wx:if="{{show && !skeleton}}" class="loading-container">
+  <view class="loading-spinner"></view>
+  <text class="loading-text">{{text}}</text>
+</view>
+
+<!--骨架屏模式 - 列表-->
+<view wx:if="{{show && skeleton && skeletonType === 'list'}}" class="skeleton-container skeleton-list">
+  <view wx:for="{{rows}}" wx:key="index" class="skeleton-item">
+    <view class="skeleton-avatar"></view>
+    <view class="skeleton-content">
+      <view class="skeleton-title"></view>
+      <view class="skeleton-text"></view>
+      <view class="skeleton-text short"></view>
+    </view>
+  </view>
+</view>
+
+<!--骨架屏模式 - 卡片-->
+<view wx:if="{{show && skeleton && skeletonType === 'card'}}" class="skeleton-container skeleton-card">
+  <view wx:for="{{rows}}" wx:key="index" class="skeleton-card-item">
+    <view class="skeleton-card-header">
+      <view class="skeleton-icon"></view>
+      <view class="skeleton-card-title"></view>
+    </view>
+    <view class="skeleton-card-value"></view>
+    <view class="skeleton-card-text"></view>
+  </view>
+</view>
+
+<!--骨架屏模式 - 详情-->
+<view wx:if="{{show && skeleton && skeletonType === 'detail'}}" class="skeleton-container skeleton-detail">
+  <view class="skeleton-detail-header">
+    <view class="skeleton-avatar large"></view>
+    <view class="skeleton-detail-info">
+      <view class="skeleton-title large"></view>
+      <view class="skeleton-text"></view>
+    </view>
+  </view>
+  <view class="skeleton-detail-body">
+    <view class="skeleton-row">
+      <view class="skeleton-cell"></view>
+      <view class="skeleton-cell"></view>
+    </view>
+    <view class="skeleton-row">
+      <view class="skeleton-cell"></view>
+      <view class="skeleton-cell"></view>
+    </view>
+    <view class="skeleton-row">
+      <view class="skeleton-cell"></view>
+      <view class="skeleton-cell"></view>
+    </view>
+  </view>
+  <view class="skeleton-detail-footer">
+    <view class="skeleton-text long"></view>
+    <view class="skeleton-text"></view>
+    <view class="skeleton-text short"></view>
+  </view>
+</view>

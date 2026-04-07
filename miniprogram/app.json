@@ -1,0 +1,65 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/holdings/holdings",
+    "pages/holdings/add-holding/add-holding",
+    "pages/holdings/edit-holding/edit-holding",
+    "pages/holdings/sell-holding/sell-holding",
+    "pages/stocks/stocks",
+    "pages/stocks/stock-detail/stock-detail",
+    "pages/alerts/alerts",
+    "pages/alerts/add-alert/add-alert",
+    "pages/transactions/transactions",
+    "pages/profile/profile",
+    "pages/settings/settings",
+    "pages/login/login",
+    "pages/register/register"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#1976d2",
+    "navigationBarTitleText": "InvestTracker",
+    "navigationBarTextStyle": "white"
+  },
+  "tabBar": {
+    "color": "#666666",
+    "selectedColor": "#1976d2",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "assets/icons/home.png",
+        "selectedIconPath": "assets/icons/home-active.png"
+      },
+      {
+        "pagePath": "pages/holdings/holdings",
+        "text": "持仓",
+        "iconPath": "assets/icons/holdings.png",
+        "selectedIconPath": "assets/icons/holdings-active.png"
+      },
+      {
+        "pagePath": "pages/stocks/stocks",
+        "text": "行情",
+        "iconPath": "assets/icons/stocks.png",
+        "selectedIconPath": "assets/icons/stocks-active.png"
+      },
+      {
+        "pagePath": "pages/alerts/alerts",
+        "text": "提醒",
+        "iconPath": "assets/icons/alerts.png",
+        "selectedIconPath": "assets/icons/alerts-active.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "assets/icons/profile.png",
+        "selectedIconPath": "assets/icons/profile-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

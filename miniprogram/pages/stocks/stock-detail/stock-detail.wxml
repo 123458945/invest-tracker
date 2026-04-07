@@ -1,0 +1,94 @@
+<view class="container">
+  <view wx:if="{{loading}}" class="loading">加载中...</view>
+  
+  <view wx:else class="content">
+    <view wx:if="{{error}}" class="error-msg">{{error}}</view>
+    
+    <!-- 行情信息 -->
+    <view wx:if="{{stockInfo}}" class="quote-card">
+      <view class="stock-header">
+        <text class="stock-name">{{stockInfo.stockName}}</text>
+        <text class="stock-code">{{stockInfo.code}}</text>
+      </view>
+      
+      <view class="price-section">
+        <text class="current-price {{stockInfo.change >= 0 ? 'up' : 'down'}}">
+          ¥{{stockInfo.currentPrice}}
+        </text>
+        <view class="change-info">
+          <text class="change {{stockInfo.change >= 0 ? 'up' : 'down'}}">
+            {{stockInfo.change >= 0 ? '+' : ''}}{{stockInfo.change}}
+          </text>
+          <text class="change-percent {{stockInfo.change >= 0 ? 'up' : 'down'}}">
+            {{stockInfo.change >= 0 ? '+' : ''}}{{stockInfo.changePercent}}%
+          </text>
+        </view>
+      </view>
+
+      <view class="detail-grid">
+        <view class="detail-item">
+          <text class="detail-label">开盘</text>
+          <text class="detail-value">{{stockInfo.open}}</text>
+        </view>
+        <view class="detail-item">
+          <text class="detail-label">最高</text>
+          <text class="detail-value up">{{stockInfo.high}}</text>
+        </view>
+        <view class="detail-item">
+          <text class="detail-label">最低</text>
+          <text class="detail-value down">{{stockInfo.low}}</text>
+        </view>
+        <view class="detail-item">
+          <text class="detail-label">昨收</text>
+          <text class="detail-value">{{stockInfo.previousClose}}</text>
+        </view>
+        <view class="detail-item">
+          <text class="detail-label">成交量</text>
+          <text class="detail-value">{{stockInfo.volume}}</text>
+        </view>
+        <view class="detail-item">
+          <text class="detail-label">成交额</text>
+          <text class="detail-value">{{stockInfo.amount}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- K线图 -->
+    <view class="chart-card">
+      <view class="chart-title">K线图</view>
+      <canvas 
+        type="2d"
+        id="klineCanvas"
+        class="chart-canvas"
+        canvas-id="klineCanvas"
+      ></canvas>
+    </view>
+
+    <!-- 均线图 -->
+    <view class="chart-card">
+      <view class="chart-title">均线走势</view>
+      <canvas 
+        type="2d"
+        id="maCanvas"
+        class="chart-canvas"
+        canvas-id="maCanvas"
+      ></canvas>
+      
+      <!-- 均线数据 -->
+      <view wx:if="{{maData}}" class="ma-data">
+        <view class="ma-item">
+          <text class="ma-label" style="color: #1976d2">MA5:</text>
+          <text class="ma-value">{{maData.ma5[maData.ma5.length-1] || '-'}}</text>
+        </view>
+        <view class="ma-item">
+          <text class="ma-label" style="color: #ff9800">MA10:</text>
+          <text class="ma-value">{{maData.ma10[maData.ma10.length-1] || '-'}}</text>
+        </view>
+        <view class="ma-item">
+          <text class="ma-label" style="color: #9c27b0">MA20:</text>
+          <text class="ma-value">{{maData.ma20[maData.ma20.length-1] || '-'}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

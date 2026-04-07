@@ -1,0 +1,81 @@
+<view class="container">
+  <!-- 统计卡片 -->
+  <view wx:if="{{stats}}" class="stats-card">
+    <view class="stat-item">
+      <text class="stat-label">总买入</text>
+      <text class="stat-value">{{stats.totalBuy || 0}}笔</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-label">总卖出</text>
+      <text class="stat-value">{{stats.totalSell || 0}}笔</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-label">已实现盈亏</text>
+      <text class="stat-value {{stats.realizedProfit >= 0 ? 'profit' : 'loss'}}">
+        {{stats.realizedProfit >= 0 ? '+' : ''}}{{stats.realizedProfit || 0}}
+      </text>
+    </view>
+  </view>
+
+  <!-- 筛选器 -->
+  <view class="filter-section">
+    <text class="filter-label">筛选：</text>
+    <picker 
+      mode="selector" 
+      range="{{filterTypes}}" 
+      range-key="label"
+      value="{{filterIndex}}"
+      bindchange="onFilterChange"
+    >
+      <view class="filter-picker">
+        {{filterTypes[filterIndex].label}}
+      </view>
+    </picker>
+  </view>
+
+  <!-- 交易列表 -->
+  <view wx:if="{{loading}}" class="loading">加载中...</view>
+  
+  <view wx:elif="{{true}}" class="transaction-list">
+    <view wx:if="{{transactions.length === 0}}" class="empty">
+      暂无交易记录
+    </view>
+
+    <view wx:for="{{transactions}}" wx:key="_id" class="transaction-item">
+      <view class="transaction-header">
+        <text class="stock-name">{{item.stockName}}</text>
+        <text class="transaction-type {{item.type}}">
+          {{item.type === 'buy' ? '买入' : '卖出'}}
+        </text>
+      </view>
+      
+      <view class="transaction-detail">
+        <view class="detail-row">
+          <text class="detail-label">数量：</text>
+          <text class="detail-value">{{item.quantity}}股</text>
+        </view>
+        <view class="detail-row">
+          <text class="detail-label">价格：</text>
+          <text class="detail-value">¥{{item.price}}</text>
+        </view>
+        <view class="detail-row">
+          <text class="detail-label">金额：</text>
+          <text class="detail-value">¥{{item.amount}}</text>
+        </view>
+        <view wx:if="{{item.profit !== undefined}}" class="detail-row">
+          <text class="detail-label">盈亏：</text>
+          <text class="detail-value {{item.profit >= 0 ? 'profit' : 'loss'}}">
+            {{item.profit >= 0 ? '+' : ''}}¥{{item.profit}}
+          </text>
+        </view>
+      </view>
+
+      <view class="transaction-footer">
+        <text class="transaction-date">{{item.date}}</text>
+      </view>
+    </view>
+
+    <view wx:if="{{loadingMore}}" class="loading-more">加载更多...</view>
+    <view wx:if="{{!hasMore && transactions.length > 0}}" class="no-more">没有更多了</view>
+  </view>
+</view>

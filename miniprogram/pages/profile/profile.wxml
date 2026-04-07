@@ -1,0 +1,37 @@
+<view class="container">
+  <view class="profile-header">
+    <view class="avatar">
+      <text class="avatar-text">{{userInfo.username ? userInfo.username[0].toUpperCase() : 'U'}}</text>
+    </view>
+    <text class="username">{{userInfo.username || '未登录'}}</text>
+    <text class="email">{{userInfo.email || ''}}</text>
+  </view>
+
+  <view class="menu-list">
+    <view class="menu-item" bindtap="navigateToSettings">
+      <view class="menu-icon">⚙️</view>
+      <text class="menu-label">个人设置</text>
+      <text class="menu-arrow">></text>
+    </view>
+
+    <view class="menu-item" bindtap="navigateToTransactions">
+      <view class="menu-icon">📋</view>
+      <text class="menu-label">交易记录</text>
+      <text class="menu-arrow">></text>
+    </view>
+
+    <view class="menu-item" bindtap="showAbout">
+      <view class="menu-icon">ℹ️</view>
+      <text class="menu-label">关于</text>
+      <text class="menu-arrow">></text>
+    </view>
+  </view>
+
+  <view class="logout-section">
+    <button class="logout-btn" bindtap="handleLogout">退出登录</button>
+  </view>
+
+  <view class="app-info">
+    <text class="app-version">InvestTracker v1.0.0</text>
+  </view>
+</view>
