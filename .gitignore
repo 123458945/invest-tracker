@@ -30,8 +30,6 @@ build/
 Thumbs.db
 *.log
 
-# Docker
-.docker/
 
 # 日志
 logs/

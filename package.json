@@ -14,10 +14,7 @@
     "build": "npm run build --workspace=client",
     "start": "npm run start --workspace=server",
     "install:all": "npm install",
-    "deploy": "docker-compose up -d --build",
-    "deploy:down": "docker-compose down",
-    "deploy:logs": "docker-compose logs -f",
-    "deploy:restart": "docker-compose restart"
+    "build:client": "npm run build --workspace=client"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

@@ -12,28 +12,45 @@ const StatCard = ({ title, value, icon, color, subtitle }) => (
   <Paper
     elevation={0}
     sx={{
-      p: 2,
+      p: 3,
       height: '100%',
       border: '1px solid',
       borderColor: 'divider',
-      borderRadius: 2,
+      borderRadius: 3,
+      cursor: 'default',
+      transition: 'box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+      '&:hover': {
+        boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
+        transform: 'translateY(-2px)',
+      },
     }}
   >
     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
       <Box>
-        <Typography variant="body2" color="text.secondary" gutterBottom>
+        <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1, display: 'block' }}>
           {title}
         </Typography>
-        <Typography variant="h5" sx={{ fontWeight: 'bold', color }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, color, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' }}>
           {value}
         </Typography>
         {subtitle && (
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="body2" sx={{ mt: 0.5, color: 'text.secondary' }}>
             {subtitle}
           </Typography>
         )}
       </Box>
-      <Box sx={{ color, opacity: 0.8 }}>
+      <Box
+        sx={{
+          width: 48,
+          height: 48,
+          borderRadius: 2.5,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          bgcolor: `${color}14`,
+          color,
+        }}
+      >
         {icon}
       </Box>
     </Box>
@@ -117,8 +134,8 @@ const DashboardPage = () => {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700 }}>
           投资仪表板
         </Typography>
         <Button
@@ -126,24 +143,29 @@ const DashboardPage = () => {
           startIcon={<RefreshIcon />}
           onClick={handleUpdatePrices}
           disabled={updating || holdings.length === 0}
+          sx={{ borderWidth: 2, '&:hover': { borderWidth: 2 } }}
         >
           {updating ? '更新中...' : '更新价格'}
         </Button>
       </Box>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
+        <Alert severity="error" sx={{ mb: 3, borderRadius: 3 }}>
           {error}
         </Alert>
       )}
 
+      {loading ? (
+        <LoadingSpinner variant="skeleton" fullScreen />
+      ) : (
+      <>
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="总资产"
             value={formatCurrency(totalMarketValue)}
             icon={<AccountBalance />}
-            color="#1976d2"
+            color="#1a56db"
             subtitle={holdings.length > 0 ? `${holdings.length} 个持仓` : '暂无持仓'}
           />
         </Grid>
@@ -152,7 +174,7 @@ const DashboardPage = () => {
             title="总盈亏"
             value={formatCurrency(totalProfitLoss)}
             icon={totalProfitLoss >= 0 ? <TrendingUp /> : <TrendingDown />}
-            color={totalProfitLoss >= 0 ? '#d32f2f' : '#2e7d32'}
+            color={totalProfitLoss >= 0 ? '#dc2626' : '#059669'}
             subtitle={formatPercent(totalProfitLossRate)}
           />
         </Grid>
@@ -161,7 +183,7 @@ const DashboardPage = () => {
             title="盈利持仓"
             value={holdings.filter(h => h.profitLoss > 0).length}
             icon={<TrendingUp />}
-            color="#d32f2f"
+            color="#dc2626"
             subtitle={holdings.filter(h => h.profitLoss > 0).length > 0 ? '盈利中' : '无'}
           />
         </Grid>
@@ -170,7 +192,7 @@ const DashboardPage = () => {
             title="亏损持仓"
             value={holdings.filter(h => h.profitLoss < 0).length}
             icon={<TrendingDown />}
-            color="#2e7d32"
+            color="#059669"
             subtitle={holdings.filter(h => h.profitLoss < 0).length > 0 ? '亏损中' : '无'}
           />
         </Grid>
@@ -178,9 +200,9 @@ const DashboardPage = () => {
 
       <Grid container spacing={3}>
         <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
+          <Card sx={{ height: '100%' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
                 资产配置
               </Typography>
               <AssetAllocationChart data={assetAllocation} loading={loading} />
@@ -189,8 +211,8 @@ const DashboardPage = () => {
         </Grid>
         <Grid item xs={12} md={6}>
           <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
                 盈亏排行
               </Typography>
               <ProfitLossRanking
@@ -202,6 +224,8 @@ const DashboardPage = () => {
           </Card>
         </Grid>
       </Grid>
+      </>
+      )}
 
       <Snackbar
         open={snackbar.open}

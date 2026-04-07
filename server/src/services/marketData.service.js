@@ -1,16 +1,15 @@
 import axios from 'axios';
-import iconv from 'iconv-lite';
 import Stock from '../models/Stock.js';
 import Holding from '../models/Holding.js';
 
-const SINA_API_BASE = 'https://hq.sinajs.cn/list=';
-const SINA_HEADERS = {
-  Referer: 'https://finance.sina.com.cn/',
-};
-
-const SINA_FUND_API = 'https://hq.sinajs.cn/list=f_';
-
+const EM_QUOTE_API = 'https://push2.eastmoney.com/api/qt/stock/get';
+const EM_BATCH_API = 'https://push2.eastmoney.com/api/qt/clist/get';
 const EASTMONEY_KLINE_API = 'https://push2his.eastmoney.com/api/qt/stock/kline/get';
+
+const EM_HEADERS = {
+  'Referer': 'https://quote.eastmoney.com/',
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+};
 
 const isTradingTime = () => {
   const now = new Date();
@@ -31,81 +30,65 @@ const getCacheDuration = () => {
 };
 
 export const fetchFundQuote = async (fundCode) => {
-  const url = `${SINA_FUND_API}${fundCode}`;
-
-  try {
-    const response = await axios.get(url, { 
-      timeout: 5000, 
-      headers: SINA_HEADERS,
-      responseType: 'arraybuffer'
-    });
-    const data = iconv.decode(Buffer.from(response.data), 'gbk');
-
-    const match = data.match(/var hq_str_f_(\w+)="(.+?)";/);
-    if (!match || !match[2]) {
-      return null;
+  // 基金在东方财富的 secid: 0.代码(深市) 或 1.代码(沪市)
+  // 尝试两个市场
+  for (const secid of [`0.${fundCode}`, `1.${fundCode}`]) {
+    try {
+      const response = await axios.get(EM_QUOTE_API, {
+        params: { secid, fields: 'f43,f44,f45,f46,f57,f58,f60,f170' },
+        timeout: 5000,
+        headers: EM_HEADERS,
+      });
+      const d = response.data?.data;
+      if (d && d.f43) {
+        return {
+          stockCode: fundCode,
+          market: 'fund',
+          stockName: d.f58,
+          currentPrice: d.f43 / 100,
+          changePercent: d.f170 / 100,
+          assetType: 'fund',
+        };
+      }
+    } catch (e) {
+      continue;
     }
-
-    const values = match[2].split(',');
-    if (values.length < 4 || !values[0]) {
-      return null;
-    }
-
-    return {
-      stockCode: fundCode,
-      market: 'fund',
-      stockName: values[0],
-      currentPrice: parseFloat(values[3]) || 0,
-      changePercent: parseFloat(values[4]) || 0,
-      assetType: 'fund',
-    };
-  } catch (error) {
-    return null;
   }
+  return null;
 };
 
 export const fetchStockQuote = async (stockCode, market) => {
-  const fullCode = `${market}${stockCode}`;
-  const url = `${SINA_API_BASE}${fullCode}`;
+  const secid = market === 'sh' ? `1.${stockCode}` : `0.${stockCode}`;
 
   try {
-    const response = await axios.get(url, { 
-      timeout: 5000, 
-      headers: SINA_HEADERS,
-      responseType: 'arraybuffer'
+    const response = await axios.get(EM_QUOTE_API, {
+      params: { secid, fields: 'f43,f44,f45,f46,f47,f48,f57,f58,f60,f170' },
+      timeout: 5000,
+      headers: EM_HEADERS,
     });
-    const data = iconv.decode(Buffer.from(response.data), 'gbk');
 
-    const match = data.match(/var hq_str_(\w+)="(.+?)";/);
-    if (!match || !match[2]) {
-      throw new Error('解析行情数据失败');
+    const d = response.data?.data;
+    if (!d || !d.f43) {
+      throw new Error('未获取到行情数据');
     }
 
-    const values = match[2].split(',');
-    if (values.length < 6) {
-      throw new Error('行情数据不完整');
-    }
+    const currentPrice = d.f43 / 100;
+    const prevClose = (d.f60 || d.f46) / 100;
+    const changePercent = prevClose > 0 ? ((currentPrice - prevClose) / prevClose) * 100 : (d.f170 / 100);
 
-    const openPrice = parseFloat(values[1]) || 0;
-    const prevClose = parseFloat(values[2]) || 0;
-    const currentPrice = parseFloat(values[3]) || 0;
-    const changePercent = prevClose > 0 ? ((currentPrice - prevClose) / prevClose) * 100 : 0;
-
-    const quote = {
+    return {
       stockCode,
       market,
-      stockName: values[0],
-      openPrice,
+      stockName: d.f58,
+      openPrice: d.f46 / 100,
       currentPrice,
-      highPrice: parseFloat(values[4]) || 0,
-      lowPrice: parseFloat(values[5]) || 0,
+      highPrice: d.f44 / 100,
+      lowPrice: d.f45 / 100,
       closePrice: prevClose,
       changePercent,
-      volume: parseInt(values[8]) || 0,
-      turnover: parseFloat(values[9]) || 0,
+      volume: d.f47 || 0,
+      turnover: d.f48 || 0,
     };
-
-    return quote;
   } catch (error) {
     throw new Error(`获取行情失败: ${error.message}`);
   }
@@ -461,50 +444,26 @@ export const updateHoldingPricesService = async (userId) => {
   const updates = [];
 
   if (stockHoldings.length > 0) {
-    const stockCodes = stockHoldings.map((h) => `${h.market}${h.stockCode}`);
-    const uniqueCodes = [...new Set(stockCodes)];
-    const url = `${SINA_API_BASE}${uniqueCodes.join(',')}`;
-
-    try {
-      const response = await axios.get(url, { 
-        timeout: 10000, 
-        headers: SINA_HEADERS,
-        responseType: 'arraybuffer'
-      });
-      const data = iconv.decode(Buffer.from(response.data), 'gbk');
-
-      const regex = /var hq_str_(\w+)="(.+?)";/g;
-      let match;
-      
-      while ((match = regex.exec(data)) !== null) {
-        const code = match[1];
-        const values = match[2].split(',');
-        
-        if (values.length < 6) continue;
-        
-        const stockName = values[0];
-        const prevClose = parseFloat(values[2]) || 0;
-        const currentPrice = parseFloat(values[3]) || 0;
-        const changePercent = prevClose > 0 ? ((currentPrice - prevClose) / prevClose) * 100 : 0;
-
-        const holding = stockHoldings.find((h) => `${h.market}${h.stockCode}` === code);
-        if (holding) {
+    for (const holding of stockHoldings) {
+      try {
+        const quote = await fetchStockQuote(holding.stockCode, holding.market);
+        if (quote && quote.currentPrice > 0) {
           await Holding.findByIdAndUpdate(holding._id, { 
-            currentPrice,
-            stockName 
+            currentPrice: quote.currentPrice,
+            stockName: quote.stockName 
           });
           
           updates.push({
             id: holding._id,
             stockCode: holding.stockCode,
-            stockName,
-            currentPrice,
-            changePercent,
+            stockName: quote.stockName,
+            currentPrice: quote.currentPrice,
+            changePercent: quote.changePercent,
           });
         }
+      } catch (error) {
+        console.error(`更新股票 ${holding.stockCode} 价格失败:`, error.message);
       }
-    } catch (error) {
-      console.error('更新股票价格失败:', error.message);
     }
   }
 
