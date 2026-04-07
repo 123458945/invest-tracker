@@ -29,31 +29,125 @@ const getCacheDuration = () => {
   return isTradingTime() ? 2 * 60 * 1000 : 60 * 60 * 1000;
 };
 
-export const fetchFundQuote = async (fundCode) => {
-  // 基金在东方财富的 secid: 0.代码(深市) 或 1.代码(沪市)
-  // 尝试两个市场
-  for (const secid of [`0.${fundCode}`, `1.${fundCode}`]) {
-    try {
-      const response = await axios.get(EM_QUOTE_API, {
-        params: { secid, fields: 'f43,f44,f45,f46,f57,f58,f60,f170' },
-        timeout: 5000,
-        headers: EM_HEADERS,
-      });
-      const d = response.data?.data;
-      if (d && d.f43) {
-        return {
-          stockCode: fundCode,
-          market: 'fund',
-          stockName: d.f58,
-          currentPrice: d.f43 / 100,
-          changePercent: d.f170 / 100,
-          assetType: 'fund',
-        };
-      }
-    } catch (e) {
-      continue;
+/**
+ * 使用东方财富搜索建议 API 判断代码类型
+ * 返回 { type: 'stock'|'fund'|'etf', market: 'sh'|'sz'|'fund', name, quoteId } 或 null
+ */
+export const identifyCodeType = async (code) => {
+  try {
+    const response = await axios.get('https://searchapi.eastmoney.com/api/suggest/get', {
+      params: {
+        input: code,
+        type: 14,
+        token: 'D43BF722C8E33BDC906FB84D85E326E8',
+        count: 5,
+      },
+      timeout: 5000,
+      headers: EM_HEADERS,
+    });
+    const items = response.data?.QuotationCodeTable?.Data;
+    if (!items || items.length === 0) return null;
+
+    const item = items[0];
+    const classify = item.Classify;
+
+    if (classify === 'OTCFUND' || classify === 'Fund') {
+      return {
+        type: classify === 'OTCFUND' ? 'fund' : 'etf',
+        market: 'fund',
+        name: item.Name,
+        quoteId: item.QuoteID,
+        code: item.Code || code,
+      };
     }
+
+    // 股票类型: AStock, BStock, KCB, CYB 等
+    const marketNum = item.MktNum; // 1=沪, 0=深
+    return {
+      type: 'stock',
+      market: marketNum === '1' ? 'sh' : 'sz',
+      name: item.Name,
+      quoteId: item.QuoteID,
+      code: item.Code || code,
+    };
+  } catch (error) {
+    console.error('识别代码类型失败:', error.message);
+    return null;
   }
+};
+
+/**
+ * 获取场外基金(OTCFUND)实时估值
+ * 使用 fundgz API
+ */
+export const fetchOtcFundQuote = async (fundCode) => {
+  try {
+    const response = await axios.get(`https://fundgz.1234567.com.cn/js/${fundCode}.js`, {
+      timeout: 5000,
+      headers: EM_HEADERS,
+    });
+    const jsonStr = response.data.replace(/^jsonpgz\(/, '').replace(/\);?$/, '');
+    const data = JSON.parse(jsonStr);
+
+    if (!data || !data.fundcode) return null;
+
+    return {
+      stockCode: data.fundcode,
+      market: 'fund',
+      stockName: data.name,
+      currentPrice: parseFloat(data.gsz) || parseFloat(data.dwjz),
+      changePercent: parseFloat(data.gszzl) || 0,
+      assetType: 'fund',
+      navDate: data.jzrq,
+      estimateTime: data.gztime,
+    };
+  } catch (error) {
+    console.error(`获取场外基金估值失败 ${fundCode}:`, error.message);
+    return null;
+  }
+};
+
+/**
+ * 获取场内基金(ETF)行情 — 用股票行情 API
+ */
+const fetchEtfQuote = async (fundCode, secid) => {
+  try {
+    const response = await axios.get(EM_QUOTE_API, {
+      params: { secid, fields: 'f43,f44,f45,f46,f57,f58,f60,f170' },
+      timeout: 5000,
+      headers: EM_HEADERS,
+    });
+    const d = response.data?.data;
+    if (d && d.f43) {
+      return {
+        stockCode: fundCode,
+        market: 'fund',
+        stockName: d.f58,
+        currentPrice: d.f43 / 100,
+        changePercent: d.f170 / 100,
+        assetType: 'fund',
+      };
+    }
+  } catch (e) {
+    // ignore
+  }
+  return null;
+};
+
+/**
+ * 获取基金行情 — 自动识别场外/场内
+ */
+export const fetchFundQuote = async (fundCode) => {
+  // 先尝试场外基金（绝大多数基金代码）
+  const otcQuote = await fetchOtcFundQuote(fundCode);
+  if (otcQuote) return otcQuote;
+
+  // 再尝试场内基金(ETF)
+  for (const secid of [`0.${fundCode}`, `1.${fundCode}`]) {
+    const etfQuote = await fetchEtfQuote(fundCode, secid);
+    if (etfQuote) return etfQuote;
+  }
+
   return null;
 };
 
@@ -131,65 +225,173 @@ export const getStockQuoteService = async (stockCode, market) => {
 
 export const searchStocksService = async (keyword, userId = null) => {
   const isCodePattern = /^\d{6}$/.test(keyword);
-  
+
   let userHoldings = [];
   if (userId) {
     userHoldings = await Holding.find({ userId }).lean();
   }
-  
+
   if (isCodePattern) {
+    // 6位数字：用东方财富搜索 API 识别类型
+    const identified = await identifyCodeType(keyword);
     const results = [];
-    
-    const fundQuote = await fetchFundQuote(keyword);
-    if (fundQuote) {
-      const holding = userHoldings.find(h => h.stockCode === keyword && h.market === 'fund');
-      results.push({
-        ...fundQuote,
-        isHeld: !!holding,
-        holdingQuantity: holding?.quantity || 0,
-      });
-    }
-    
-    const markets = ['sh', 'sz'];
-    for (const market of markets) {
-      try {
-        const quote = await fetchStockQuote(keyword, market);
-        if (quote && quote.stockName) {
-          const holding = userHoldings.find(h => h.stockCode === keyword && h.market === market);
+
+    if (identified) {
+      const holding = userHoldings.find(
+        (h) => h.stockCode === identified.code && h.market === identified.market
+      );
+
+      if (identified.type === 'fund') {
+        // 场外基金
+        const quote = await fetchOtcFundQuote(identified.code);
+        if (quote) {
           results.push({
-            stockCode: quote.stockCode,
-            stockName: quote.stockName,
-            market,
-            currentPrice: quote.currentPrice,
-            changePercent: quote.changePercent,
-            assetType: 'stock',
+            ...quote,
             isHeld: !!holding,
             holdingQuantity: holding?.quantity || 0,
           });
         }
-      } catch (error) {
-        continue;
+      } else if (identified.type === 'etf') {
+        // 场内基金(ETF)
+        const secid = identified.quoteId;
+        const quote = await fetchEtfQuote(identified.code, secid);
+        if (quote) {
+          results.push({
+            ...quote,
+            isHeld: !!holding,
+            holdingQuantity: holding?.quantity || 0,
+          });
+        }
+      } else if (identified.type === 'stock') {
+        // 股票
+        try {
+          const quote = await fetchStockQuote(identified.code, identified.market);
+          if (quote && quote.stockName) {
+            results.push({
+              stockCode: quote.stockCode,
+              stockName: quote.stockName,
+              market: identified.market,
+              currentPrice: quote.currentPrice,
+              changePercent: quote.changePercent,
+              assetType: 'stock',
+              isHeld: !!holding,
+              holdingQuantity: holding?.quantity || 0,
+            });
+          }
+        } catch (e) {
+          // ignore
+        }
       }
     }
-    
+
+    // 如果识别失败，回退到原有逻辑尝试 sh/sz
+    if (results.length === 0) {
+      for (const market of ['sh', 'sz']) {
+        try {
+          const quote = await fetchStockQuote(keyword, market);
+          if (quote && quote.stockName) {
+            const holding = userHoldings.find(
+              (h) => h.stockCode === keyword && h.market === market
+            );
+            results.push({
+              stockCode: quote.stockCode,
+              stockName: quote.stockName,
+              market,
+              currentPrice: quote.currentPrice,
+              changePercent: quote.changePercent,
+              assetType: 'stock',
+              isHeld: !!holding,
+              holdingQuantity: holding?.quantity || 0,
+            });
+          }
+        } catch (e) {
+          continue;
+        }
+      }
+      // 最后尝试基金
+      if (results.length === 0) {
+        const fundQuote = await fetchOtcFundQuote(keyword);
+        if (fundQuote) {
+          const holding = userHoldings.find(
+            (h) => h.stockCode === keyword && h.market === 'fund'
+          );
+          results.push({
+            ...fundQuote,
+            isHeld: !!holding,
+            holdingQuantity: holding?.quantity || 0,
+          });
+        }
+      }
+    }
+
     return results;
   }
-  
-  const stocks = await Stock.find({
-    $or: [
-      { stockCode: { $regex: keyword, $options: 'i' } },
-      { stockName: { $regex: keyword, $options: 'i' } },
-    ],
-  }).limit(20).lean();
 
-  return stocks.map(stock => {
-    const holding = userHoldings.find(h => h.stockCode === stock.stockCode);
-    return {
-      ...stock,
-      isHeld: !!holding,
-      holdingQuantity: holding?.quantity || 0,
-    };
-  });
+  // 非纯数字关键词：先搜东方财富，再搜本地数据库
+  const results = [];
+
+  try {
+    const response = await axios.get('https://searchapi.eastmoney.com/api/suggest/get', {
+      params: {
+        input: keyword,
+        type: 14,
+        token: 'D43BF722C8E33BDC906FB84D85E326E8',
+        count: 10,
+      },
+      timeout: 5000,
+      headers: EM_HEADERS,
+    });
+    const items = response.data?.QuotationCodeTable?.Data || [];
+
+    for (const item of items) {
+      const classify = item.Classify;
+      const holding = userHoldings.find(
+        (h) => h.stockCode === item.Code && h.market === (classify === 'OTCFUND' || classify === 'Fund' ? 'fund' : (item.MktNum === '1' ? 'sh' : 'sz'))
+      );
+
+      if (classify === 'OTCFUND' || classify === 'Fund') {
+        results.push({
+          stockCode: item.Code,
+          stockName: item.Name,
+          market: 'fund',
+          assetType: 'fund',
+          isHeld: !!holding,
+          holdingQuantity: holding?.quantity || 0,
+        });
+      } else {
+        results.push({
+          stockCode: item.Code,
+          stockName: item.Name,
+          market: item.MktNum === '1' ? 'sh' : 'sz',
+          assetType: 'stock',
+          isHeld: !!holding,
+          holdingQuantity: holding?.quantity || 0,
+        });
+      }
+    }
+  } catch (e) {
+    // 东方财富搜索失败，回退到本地
+  }
+
+  if (results.length === 0) {
+    const stocks = await Stock.find({
+      $or: [
+        { stockCode: { $regex: keyword, $options: 'i' } },
+        { stockName: { $regex: keyword, $options: 'i' } },
+      ],
+    }).limit(20).lean();
+
+    return stocks.map((stock) => {
+      const holding = userHoldings.find((h) => h.stockCode === stock.stockCode);
+      return {
+        ...stock,
+        isHeld: !!holding,
+        holdingQuantity: holding?.quantity || 0,
+      };
+    });
+  }
+
+  return results;
 };
 
 export const getStockMAService = async (stockCode) => {
@@ -378,23 +580,21 @@ export const getHistoryClosePriceService = async (stockCode, market, date) => {
 };
 
 const getFundHistoryPriceService = async (fundCode, date) => {
-  const url = `https://fundf10.eastmoney.com/F10DataApi.aspx`;
-  
+  // 使用东方财富基金历史净值 JSON API
   const dateObj = new Date(date);
   const startDate = new Date(dateObj);
   startDate.setDate(startDate.getDate() - 7);
   const endDate = new Date(dateObj);
   endDate.setDate(endDate.getDate() + 7);
-  
+
   const formatDate = (d) => d.toISOString().split('T')[0];
-  
+
   try {
-    const response = await axios.get(url, {
+    const response = await axios.get('https://api.fund.eastmoney.com/f10/lsjz', {
       params: {
-        type: 'lsjz',
-        code: fundCode,
-        page: 1,
-        per: 40,
+        fundCode,
+        pageIndex: 1,
+        pageSize: 40,
         sdate: formatDate(startDate),
         edate: formatDate(endDate),
       },
@@ -405,24 +605,35 @@ const getFundHistoryPriceService = async (fundCode, date) => {
       },
     });
 
-    const data = response.data;
-    const contentMatch = data.match(/content:"([^"]+)"/);
-    if (!contentMatch) {
+    const list = response.data?.Data?.LSJZList;
+    if (!list || list.length === 0) {
       throw new Error('未找到基金净值数据');
     }
-    
-    const html = contentMatch[1];
-    const rowRegex = new RegExp(`<td>${date}</td>\\s*<td[^>]*>(\\d+\\.\\d+)</td>`, 'i');
-    const match = html.match(rowRegex);
-    
-    if (match) {
+
+    // 精确匹配日期
+    for (const item of list) {
+      if (item.FSRQ === date) {
+        return {
+          date,
+          closePrice: parseFloat(item.DWJZ) || 0,
+          changePercent: parseFloat(item.JZZZL) || 0,
+        };
+      }
+    }
+
+    // 没有精确匹配，返回最接近的之前交易日
+    const beforeDate = list.filter((item) => item.FSRQ <= date);
+    if (beforeDate.length > 0) {
+      const closest = beforeDate[0];
       return {
-        date,
-        closePrice: parseFloat(match[1]) || 0,
+        date: closest.FSRQ,
+        closePrice: parseFloat(closest.DWJZ) || 0,
+        changePercent: parseFloat(closest.JZZZL) || 0,
+        note: `${date} 非交易日，使用最近的交易日 ${closest.FSRQ} 的净值`,
       };
     }
 
-    throw new Error('未找到该日期的基金净值数据（可能为非交易日）');
+    throw new Error('未找到该日期附近的基金净值数据');
   } catch (error) {
     if (error.message.includes('未找到')) {
       throw error;
@@ -470,13 +681,13 @@ export const updateHoldingPricesService = async (userId) => {
   if (fundHoldings.length > 0) {
     for (const holding of fundHoldings) {
       try {
-        const fundData = await fetchFundQuote(holding.stockCode);
+        const fundData = await fetchOtcFundQuote(holding.stockCode);
         if (fundData && fundData.currentPrice > 0) {
-          await Holding.findByIdAndUpdate(holding._id, { 
+          await Holding.findByIdAndUpdate(holding._id, {
             currentPrice: fundData.currentPrice,
-            stockName: fundData.stockName 
+            stockName: fundData.stockName,
           });
-          
+
           updates.push({
             id: holding._id,
             stockCode: holding.stockCode,

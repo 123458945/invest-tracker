@@ -2,10 +2,13 @@ import cron from 'node-cron';
 import axios from 'axios';
 import Alert from '../models/Alert.js';
 import { sendAlertEmail } from '../services/email.service.js';
-import { calculateAndUpdateMA } from '../services/marketData.service.js';
+import { calculateAndUpdateMA, fetchStockQuote } from '../services/marketData.service.js';
 import logger from '../utils/logger.js';
 
-const SINA_API_BASE = 'https://hq.sinajs.cn/list=';
+const EM_HEADERS = {
+  'Referer': 'https://quote.eastmoney.com/',
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+};
 
 const MA_ALERT_TYPES = ['ma5_above', 'ma5_below', 'ma10_above', 'ma10_below', 'ma20_above', 'ma20_below', 'ma60_above', 'ma60_below'];
 
@@ -23,22 +26,13 @@ const isTradingTime = () => {
   return true;
 };
 
-const fetchStockPrice = async (stockCode, market) => {
-  const fullCode = `${market}${stockCode}`;
-  const url = `${SINA_API_BASE}${fullCode}`;
-
+const fetchStockPriceForAlert = async (stockCode, market) => {
   try {
-    const response = await axios.get(url, { timeout: 5000 });
-    const data = response.data;
-
-    const match = data.match(/var hq_str_(.+?)="(.+?)";/);
-    if (!match) return null;
-
-    const values = match[2].split(',');
-    const currentPrice = parseFloat(values[3]) || 0;
-    const changePercent = parseFloat(values[9]) || 0;
-
-    return { currentPrice, changePercent };
+    const quote = await fetchStockQuote(stockCode, market);
+    return {
+      currentPrice: quote.currentPrice,
+      changePercent: quote.changePercent,
+    };
   } catch (error) {
     logger.error(`获取股票价格失败: ${stockCode} - ${error.message}`);
     return null;
@@ -137,7 +131,7 @@ const checkAlerts = async () => {
     for (const [key, stockInfo] of uniqueStocks) {
       const { stockCode, market, hasMAAlert } = stockInfo;
       
-      const priceData = await fetchStockPrice(stockCode, market);
+      const priceData = await fetchStockPriceForAlert(stockCode, market);
       
       if (!priceData) {
         logger.warn(`无法获取股票 ${stockCode} 的价格，跳过相关提醒`);
