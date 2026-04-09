@@ -19,8 +19,6 @@ Page({
       return
     }
 
-    const today = new Date()
-    const todayStr = this.formatDate(today)
     this.setData({
       code: options.code,
       market: options.market || 'sh',
@@ -40,8 +38,7 @@ Page({
     try {
       this.setData({ loading: true, error: '' })
       
-      // 并行加载行情数据、均线数据和
-K线数据
+      // 并行加载行情数据、均线数据和K线数据
       const [quoteRes, maRes, klineRes] = await Promise.all([
         get(`/stocks/${this.data.code}`, { market: this.data.market }),
         get(`/stocks/${this.data.code}/ma`),
@@ -109,7 +106,7 @@ K线数据
         if (klineData && klineData.length > 0) {
           const maxPrice = Math.max(...klineData.map(k => k.high || k.close))
           const minPrice = Math.min(...klineData.map(k => k.low || k.close))
-          const priceRange = maxPrice - minPrice
+          const priceRange = maxPrice - minPrice || 1
           const barWidth = (width - 40) / klineData.length
           klineData.forEach((item, index) => {
             const x = 20 + index * barWidth
@@ -176,7 +173,7 @@ K线数据
     ctx.strokeStyle = color
     const maxPrice = Math.max(...data)
     const minPrice = Math.min(...data.filter(v => v !== null))
-    const priceRange = maxPrice - minPrice
+    const priceRange = maxPrice - minPrice || 1
     const stepX = (width - 40) / (data.length - 1)
     let started = false
     data.forEach((value, index) => {
@@ -196,8 +193,9 @@ K线数据
     ctx.stroke()
   },
 
-  formatDate(dateStr) {
-    if (!dateStr) return ''
-    return dateStr.split('T')[0]
+  onPullDownRefresh() {
+    this.loadStockData().catch(() => {}).then(() => {
+      wx.stopPullDownRefresh()
+    })
   }
 })

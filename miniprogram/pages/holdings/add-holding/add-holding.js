@@ -1,6 +1,7 @@
 const { get, post } = require('../../../utils/request.js')
+const { isLoggedIn, withLogin } = require('../../../utils/auth.js')
 
-Page({
+Page(withLogin({
   data: {
     stockCode: '',
     stockName: '',
@@ -30,7 +31,7 @@ Page({
   onLoad() {
     const today = new Date()
     const todayStr = this.formatDate(today)
-    this.setData({ 
+    this.setData({
       buyDate: todayStr,
       today: todayStr
     })
@@ -43,48 +44,22 @@ Page({
     return `${year}-${month}-${day}`
   },
 
-  onStockCodeInput(e) {
-    const value = e.detail.value.replace(/\D/g, '').slice(0, 6)
-    this.setData({ 
-      stockCode: value,
-      stockInfo: null,
-      error: ''
-    }, () => {
-      if (value.length === 6) {
-        this.searchStock(value)
-      }
+  onStockSelect(e) {
+    const stock = e.detail
+    if (!stock) return
+
+    this.setData({
+      stockCode: stock.code || stock.stockCode || '',
+      stockName: stock.name || stock.stockName || '',
+      market: stock.market || 'sh',
+      marketIndex: (stock.market || 'sh') === 'sz' ? 1 : 0,
+      stockInfo: {
+        currentPrice: stock.currentPrice || stock.price || 0,
+        stockName: stock.name || stock.stockName || ''
+      },
+      buyPrice: String(stock.currentPrice || stock.price || '')
     })
-  },
-
-  onStockNameInput(e) {
-    this.setData({ stockName: e.detail.value })
-  },
-
-  async searchStock(code) {
-    if (this.data.searching) return
-    
-    try {
-      this.setData({ searching: true, error: '' })
-      const res = await get('/stocks/search', { keyword: code })
-      
-      if (res.success && res.data && res.data.length > 0) {
-        const stock = res.data[0]
-        this.setData({
-          stockName: stock.stockName || stock.name || '',
-          stockInfo: {
-            currentPrice: stock.currentPrice || stock.price || 0,
-            stockName: stock.stockName || stock.name || ''
-          },
-          buyPrice: String(stock.currentPrice || stock.price || ''),
-          searching: false
-        })
-        this.updateEstimatedAmount()
-      } else {
-        this.setData({ searching: false, stockInfo: null })
-      }
-    } catch (err) {
-      this.setData({ searching: false, stockInfo: null })
-    }
+    this.updateEstimatedAmount()
   },
 
   onMarketChange(e) {
@@ -167,7 +142,7 @@ Page({
       this.setData({ submitting: true, error: '' })
 
       const { stockCode, stockName, market, assetType, quantity, buyPrice, buyDate } = this.data
-      
+
       const res = await post('/holdings', {
         stockCode,
         stockName,
@@ -192,4 +167,4 @@ Page({
   handleCancel() {
     wx.navigateBack()
   }
-})
+}))

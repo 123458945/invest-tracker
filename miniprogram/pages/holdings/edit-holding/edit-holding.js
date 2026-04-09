@@ -1,6 +1,7 @@
 const { get, put } = require('../../../utils/request.js')
+const { isLoggedIn, withLogin } = require('../../../utils/auth.js')
 
-Page({
+Page(withLogin({
   data: {
     id: '',
     stockCode: '',
@@ -201,4 +202,4 @@ Page({
   handleCancel() {
     wx.navigateBack()
   }
-})
+}))

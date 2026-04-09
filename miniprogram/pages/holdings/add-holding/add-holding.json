@@ -1,4 +1,6 @@
 {
   "navigationBarTitleText": "添加持仓",
-  "usingComponents": {}
+  "usingComponents": {
+    "stock-picker": "../../../components/stock-picker/stock-picker"
+  }
 }

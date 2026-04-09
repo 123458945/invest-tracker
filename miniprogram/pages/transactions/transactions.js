@@ -2,8 +2,9 @@
 const { get } = require('../../utils/request.js')
 
 const { showToast } = require('../../utils/toast.js')
+const { isLoggedIn, withLogin } = require('../../utils/auth.js')
 
-Page({
+Page(withLogin({
   data: {
     transactions: [],
     loading: true,
@@ -23,21 +24,12 @@ Page({
   },
 
   onLoad() {
-    this.checkLogin()
   },
 
   onShow() {
-    if (getApp().globalData.token) {
+    if (isLoggedIn()) {
       this.fetchTransactions()
       this.fetchStats()
-    }
-  },
-
-  checkLogin() {
-    const app = getApp()
-    if (!app.globalData.token) {
-      wx.redirectTo({ url: '/pages/login/login' })
-      return
     }
   },
 
@@ -59,7 +51,7 @@ Page({
         params.type = filterType
       }
 
-      const res = await get('/holdings/transactions', { params })
+      const res = await get('/holdings/transactions', params)
       const transactions = res.data || []
 
       this.setData({
@@ -103,7 +95,7 @@ Page({
 
   onReachBottom() {
     if (this.data.hasMore && !this.data.loading) {
-      this.setData({ 
+      this.setData({
         page: this.data.page + 1,
         loading: true,
         hasMore: true
@@ -111,4 +103,4 @@ Page({
       this.fetchTransactions(true)
     }
   }
-})
+}))

@@ -1,6 +1,6 @@
 <view class="container">
   <!-- 统计卡片 -->
-  <view wx:if="{{stats}}" class="stats-card">
+  <view wx:if="{{stats && !loading}}" class="stats-card">
     <view class="stat-item">
       <text class="stat-label">总买入</text>
       <text class="stat-value">{{stats.totalBuy || 0}}笔</text>
@@ -20,9 +20,9 @@
   <!-- 筛选器 -->
   <view class="filter-section">
     <text class="filter-label">筛选：</text>
-    <picker 
-      mode="selector" 
-      range="{{filterTypes}}" 
+    <picker
+      mode="selector"
+      range="{{filterTypes}}"
       range-key="label"
       value="{{filterIndex}}"
       bindchange="onFilterChange"
@@ -33,14 +33,14 @@
     </picker>
   </view>
 
-  <!-- 交易列表 -->
-  <view wx:if="{{loading}}" class="loading">加载中...</view>
-  
-  <view wx:elif="{{true}}" class="transaction-list">
-    <view wx:if="{{transactions.length === 0}}" class="empty">
-      暂无交易记录
-    </view>
+  <!-- 加载骨架屏 -->
+  <loading show="{{loading}}" skeleton="{{true}}" skeletonType="list" skeletonRows="{{5}}" wx:if="{{loading}}" />
 
+  <!-- 错误 -->
+  <empty-state wx:elif="{{error}}" type="error" text="{{error}}" showAction="{{true}}" actionText="重新加载" bind:action="fetchTransactions" />
+
+  <!-- 交易列表 -->
+  <view wx:elif="{{transactions.length > 0}}" class="transaction-list">
     <view wx:for="{{transactions}}" wx:key="_id" class="transaction-item">
       <view class="transaction-header">
         <text class="stock-name">{{item.stockName}}</text>
@@ -48,7 +48,7 @@
           {{item.type === 'buy' ? '买入' : '卖出'}}
         </text>
       </view>
-      
+
       <view class="transaction-detail">
         <view class="detail-row">
           <text class="detail-label">数量：</text>
@@ -78,4 +78,7 @@
     <view wx:if="{{loadingMore}}" class="loading-more">加载更多...</view>
     <view wx:if="{{!hasMore && transactions.length > 0}}" class="no-more">没有更多了</view>
   </view>
+
+  <!-- 空状态 -->
+  <empty-state wx:elif="{{!loading}}" type="empty" text="暂无交易记录" />
 </view>

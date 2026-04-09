@@ -56,3 +56,30 @@
 .error-message {
   margin: 20rpx;
 }
+
+.selected-info {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 20rpx;
+  background-color: #e8f5e9;
+  border-radius: 8rpx;
+  margin: 16rpx 0;
+}
+
+.selected-stock-name {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.selected-stock-code {
+  font-size: 26rpx;
+  color: #999;
+}
+
+.selected-price {
+  font-size: 26rpx;
+  color: #1976d2;
+  margin-left: auto;
+}

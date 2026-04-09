@@ -1,30 +1,26 @@
 <view class="container">
   <view class="form">
     <view wx:if="{{error}}" class="error-msg">{{error}}</view>
-    
+
     <view class="form-item">
-      <text class="label">股票代码 *</text>
-      <input 
-        class="input" 
-        type="text" 
-        maxlength="6"
-        placeholder="请输入6位股票代码"
-        value="{{stockCode}}"
-        bindinput="onStockCodeInput"
+      <text class="label">选择股票 *</text>
+      <stock-picker
+        placeholder="输入股票代码或名称搜索"
+        showHistory="{{true}}"
+        selectedStock="{{stockCode ? { code: stockCode, name: stockName } : null}}"
+        bind:select="onStockSelect"
       />
-      <view wx:if="{{searching}}" class="search-hint">搜索中...</view>
     </view>
 
-    <view wx:if="{{stockName}}" class="form-item">
-      <text class="label">股票名称</text>
-      <view class="stock-name">{{stockName}}</view>
+    <view wx:if="{{stockCode}}" class="selected-info">
+      <text class="selected-name">{{stockName}} ({{stockCode}})</text>
     </view>
 
-    <view class="form-item">
+    <view class="form-item" wx:if="{{stockCode}}">
       <text class="label">提醒类型 *</text>
-      <picker 
-        mode="selector" 
-        range="{{alertTypes}}" 
+      <picker
+        mode="selector"
+        range="{{alertTypes}}"
         range-key="label"
         value="{{alertTypeIndex}}"
         bindchange="onAlertTypeChange"
@@ -35,60 +31,21 @@
       </picker>
     </view>
 
-    <!-- 价格提醒配置 -->
-    <view wx:if="{{alertType === 'price_up' || alertType === 'price_down'}}" class="form-item">
-      <text class="label">目标价格 *</text>
-      <input 
-        class="input" 
-        type="digit" 
-        placeholder="请输入目标价格"
-        value="{{targetPrice}}"
-        bindinput="onTargetPriceInput"
+    <view class="form-item" wx:if="{{stockCode}}">
+      <text class="label">{{alertTypes[alertTypeIndex].label}} *</text>
+      <input
+        class="input"
+        type="digit"
+        placeholder="{{alertType.indexOf('change') > -1 ? '请输入百分比，如5' : '请输入目标值'}}"
+        value="{{targetValue}}"
+        bindinput="onTargetValueInput"
       />
     </view>
 
-    <!-- 均线提醒配置 -->
-    <view wx:if="{{alertType === 'ma_golden_cross' || alertType === 'ma_dead_cross'}}">
-      <view class="form-item">
-        <text class="label">短期均线周期 *</text>
-        <input 
-          class="input" 
-          type="number" 
-          placeholder="例如：5"
-          value="{{maPeriod1}}"
-          bindinput="onMAPeriod1Input"
-        />
-      </view>
-      <view class="form-item">
-        <text class="label">长期均线周期 *</text>
-        <input 
-          class="input" 
-          type="number" 
-          placeholder="例如：10"
-          value="{{maPeriod2}}"
-          bindinput="onMAPeriod2Input"
-        />
-      </view>
-    </view>
-
-    <view class="form-item">
-      <text class="label">通知方式</text>
-      <checkbox-group bindchange="onNotifyMethodChange">
-        <label class="checkbox-item">
-          <checkbox value="app" checked="{{notifyMethods.indexOf('app') > -1}}" />
-          <text>APP推送</text>
-        </label>
-        <label class="checkbox-item">
-          <checkbox value="email" checked="{{notifyMethods.indexOf('email') > -1}}" />
-          <text>邮件通知</text>
-        </label>
-      </checkbox-group>
-    </view>
-
-    <view class="button-group">
+    <view class="button-group" wx:if="{{stockCode}}">
       <button class="btn btn-cancel" bindtap="handleCancel">取消</button>
-      <button 
-        class="btn btn-submit" 
+      <button
+        class="btn btn-submit"
         bindtap="handleSubmit"
         disabled="{{submitting}}"
       >

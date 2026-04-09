@@ -1,9 +1,9 @@
 const { get, del } = require('../../utils/request.js')
 const { showToast, showConfirm } = require('../../utils/toast.js')
 const { groupBy } = require('../../utils/util.js')
-const { checkLogin, isLoggedIn } = require('../../utils/auth.js')
+const { isLoggedIn, withLogin } = require('../../utils/auth.js')
 
-Page({
+Page(withLogin({
   data: {
     holdings: [],
     groupedHoldings: [],
@@ -13,14 +13,10 @@ Page({
     totalMarketValue: '¥0.00',
     totalProfitLoss: '¥0.00',
     totalProfitLossRate: '+0.00%',
-    summaryBar: false,
-    showAddDialog: false
+    summaryBar: false
   },
 
   onLoad() {
-    if (!checkLogin()) {
-      return
-    }
     this.fetchData()
   },
 
@@ -147,25 +143,20 @@ Page({
   },
 
   navigateToTransactions() {
-    this.setData({ showAddDialog: false })
     wx.navigateTo({
       url: '/pages/transactions/transactions'
     })
   },
 
-  openAddDialog() {
-    this.setData({ showAddDialog: true })
+  navigateToAddHolding() {
+    wx.navigateTo({
+      url: '/pages/holdings/add-holding/add-holding'
+    })
   },
 
-  closeAddDialog() {
-    this.setData({ showAddDialog: false })
-  },
-
-  onConfirmAdd() {
-    this.setData({ showAddDialog: false })
-  },
-
-  onCancelAdd() {
-    this.setData({ showAddDialog: false })
+  onPullDownRefresh() {
+    this.fetchData().catch(() => {}).then(() => {
+      wx.stopPullDownRefresh()
+    })
   }
-})
+}))

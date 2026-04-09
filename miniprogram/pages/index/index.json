@@ -1,5 +1,9 @@
 {
   "navigationBarTitleText": "InvestTracker",
   "enablePullDownRefresh": true,
-  "usingComponents": {}
+  "usingComponents": {
+    "ec-canvas": "../../components/ec-canvas/ec-canvas",
+    "loading": "../../components/loading/loading",
+    "empty-state": "../../components/empty-state/empty-state"
+  }
 }

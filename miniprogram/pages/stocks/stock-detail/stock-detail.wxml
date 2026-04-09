@@ -1,16 +1,17 @@
 <view class="container">
-  <view wx:if="{{loading}}" class="loading">加载中...</view>
-  
+  <!-- 加载骨架屏 -->
+  <loading show="{{loading}}" skeleton="{{true}}" skeletonType="detail" skeletonRows="{{3}}" wx:if="{{loading}}" />
+
+  <view wx:elif="{{error}}" class="error-msg">{{error}}</view>
+
   <view wx:else class="content">
-    <view wx:if="{{error}}" class="error-msg">{{error}}</view>
-    
     <!-- 行情信息 -->
     <view wx:if="{{stockInfo}}" class="quote-card">
       <view class="stock-header">
         <text class="stock-name">{{stockInfo.stockName}}</text>
         <text class="stock-code">{{stockInfo.code}}</text>
       </view>
-      
+
       <view class="price-section">
         <text class="current-price {{stockInfo.change >= 0 ? 'up' : 'down'}}">
           ¥{{stockInfo.currentPrice}}
@@ -56,7 +57,7 @@
     <!-- K线图 -->
     <view class="chart-card">
       <view class="chart-title">K线图</view>
-      <canvas 
+      <canvas
         type="2d"
         id="klineCanvas"
         class="chart-canvas"
@@ -67,13 +68,13 @@
     <!-- 均线图 -->
     <view class="chart-card">
       <view class="chart-title">均线走势</view>
-      <canvas 
+      <canvas
         type="2d"
         id="maCanvas"
         class="chart-canvas"
         canvas-id="maCanvas"
       ></canvas>
-      
+
       <!-- 均线数据 -->
       <view wx:if="{{maData}}" class="ma-data">
         <view class="ma-item">

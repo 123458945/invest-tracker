@@ -1,6 +1,7 @@
 const { get, put } = require('../../utils/request.js')
+const { isLoggedIn, withLogin } = require('../../utils/auth.js')
 
-Page({
+Page(withLogin({
   data: {
     userInfo: null,
     settings: {
@@ -20,20 +21,11 @@ Page({
   },
 
   onLoad() {
-    this.checkLogin()
   },
 
   onShow() {
-    if (getApp().globalData.token) {
+    if (isLoggedIn()) {
       this.fetchSettings()
-    }
-  },
-
-  checkLogin() {
-    const app = getApp()
-    if (!app.globalData.token) {
-      wx.redirectTo({ url: '/pages/login/login' })
-      return
     }
   },
 
@@ -159,4 +151,4 @@ Page({
   navigateToTransactions() {
     wx.navigateTo({ url: '/pages/transactions/transactions' })
   }
-})
+}))

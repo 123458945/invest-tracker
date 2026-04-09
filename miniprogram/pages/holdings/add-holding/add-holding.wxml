@@ -1,17 +1,23 @@
 <view class="container">
   <view class="form-section">
     <view class="section-title">股票信息</view>
-    
-    <view class="weui-cells weui-cells_after-title">
-      <view class="weui-cell weui-cell_input">
-        <view class="weui-cell__hd">
-          <view class="weui-label required">股票代码</view>
-        </view>
-        <view class="weui-cell__bd">
-          <input class="weui-input" placeholder="6位数字代码" value="{{stockCode}}" bindinput="onStockCodeInput" maxlength="6" type="number" />
-        </view>
-      </view>
-      
+
+    <!-- 使用 stock-picker 组件搜索股票 -->
+    <stock-picker
+      placeholder="输入股票代码或名称搜索"
+      showHistory="{{true}}"
+      selectedStock="{{stockCode ? { code: stockCode, name: stockName } : null}}"
+      bind:select="onStockSelect"
+    />
+
+    <!-- 已选择股票信息 -->
+    <view wx:if="{{stockCode}}" class="selected-info">
+      <text class="selected-stock-name">{{stockName}}</text>
+      <text class="selected-stock-code">{{stockCode}}</text>
+      <text wx:if="{{stockInfo}}" class="selected-price">当前价: ¥{{stockInfo.currentPrice}}</text>
+    </view>
+
+    <view class="weui-cells weui-cells_after-title" wx:if="{{stockCode}}">
       <view class="weui-cell weui-cell_select">
         <view class="weui-cell__hd">
           <view class="weui-label required">市场</view>
@@ -22,28 +28,12 @@
           </picker>
         </view>
       </view>
-      
-      <view class="weui-cell weui-cell_input">
-        <view class="weui-cell__hd">
-          <view class="weui-label">股票名称</view>
-        </view>
-        <view class="weui-cell__bd">
-          <input class="weui-input" placeholder="自动获取或手动输入" value="{{stockName}}" bindinput="onStockNameInput" />
-        </view>
-        <view class="weui-cell__ft" wx:if="{{searching}}">
-          <text class="searching-text">搜索中...</text>
-        </view>
-      </view>
-    </view>
-    
-    <view class="weui-cells__tips" wx:if="{{stockInfo}}">
-      <text>当前价格: ¥{{stockInfo.currentPrice}} | {{stockInfo.stockName}}</text>
     </view>
   </view>
 
-  <view class="form-section">
+  <view class="form-section" wx:if="{{stockCode}}">
     <view class="section-title">交易信息</view>
-    
+
     <view class="weui-cells weui-cells_after-title">
       <view class="weui-cell weui-cell_select">
         <view class="weui-cell__hd">
@@ -55,7 +45,7 @@
           </picker>
         </view>
       </view>
-      
+
       <view class="weui-cell weui-cell_input">
         <view class="weui-cell__hd">
           <view class="weui-label required">买入数量</view>
@@ -65,7 +55,7 @@
         </view>
         <view class="weui-cell__ft">股</view>
       </view>
-      
+
       <view class="weui-cell weui-cell_input">
         <view class="weui-cell__hd">
           <view class="weui-label required">买入价格</view>
@@ -75,7 +65,7 @@
         </view>
         <view class="weui-cell__ft">元/股</view>
       </view>
-      
+
       <view class="weui-cell weui-cell_input">
         <view class="weui-cell__hd">
           <view class="weui-label required">买入日期</view>
@@ -87,7 +77,7 @@
         </view>
       </view>
     </view>
-    
+
     <view class="weui-cells__tips" wx:if="{{estimatedAmount}}">
       <text>预计金额: ¥{{estimatedAmount}}</text>
     </view>
@@ -97,7 +87,7 @@
     {{error}}
   </view>
 
-  <view class="button-group">
+  <view class="button-group" wx:if="{{stockCode}}">
     <button class="weui-btn" type="default" bindtap="handleCancel">取消</button>
     <button class="weui-btn primary-btn" type="primary" bindtap="handleSubmit" loading="{{submitting}}" disabled="{{submitting}}">
       {{submitting ? '提交中...' : '确认添加'}}

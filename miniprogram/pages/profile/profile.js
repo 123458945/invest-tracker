@@ -1,6 +1,7 @@
 const app = getApp()
+const { isLoggedIn, withLogin } = require('../../utils/auth.js')
 
-Page({
+Page(withLogin({
   data: {
     userInfo: {}
   },
@@ -46,4 +47,4 @@ Page({
       }
     })
   }
-})
+}))

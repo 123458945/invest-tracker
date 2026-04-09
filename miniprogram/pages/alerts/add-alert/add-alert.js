@@ -1,96 +1,58 @@
 const { get, post } = require('../../../utils/request.js')
-const { debounce } = require('../../../utils/util.js')
+const { isLoggedIn, withLogin } = require('../../../utils/auth.js')
 
-Page({
+Page(withLogin({
   data: {
     stockCode: '',
     stockName: '',
     market: 'sh',
-    alertType: 'price_up',
+    alertType: 'price_above',
     alertTypeIndex: 0,
     alertTypes: [
-      { value: 'price_up', label: '价格突破上界' },
-      { value: 'price_down', label: '价格突破下界' },
-      { value: 'ma_golden_cross', label: '均线金叉' },
-      { value: 'ma_dead_cross', label: '均线死叉' }
+      { value: 'price_above', label: '价格高于', category: 'price' },
+      { value: 'price_below', label: '价格低于', category: 'price' },
+      { value: 'change_above', label: '涨幅高于(%)', category: 'change' },
+      { value: 'change_below', label: '跌幅低于(%)', category: 'change' },
+      { value: 'ma5_above', label: '突破MA5均线', category: 'ma' },
+      { value: 'ma5_below', label: '跌破MA5均线', category: 'ma' },
+      { value: 'ma10_above', label: '突破MA10均线', category: 'ma' },
+      { value: 'ma10_below', label: '跌破MA10均线', category: 'ma' },
+      { value: 'ma20_above', label: '突破MA20均线', category: 'ma' },
+      { value: 'ma20_below', label: '跌破MA20均线', category: 'ma' },
+      { value: 'ma60_above', label: '突破MA60均线', category: 'ma' },
+      { value: 'ma60_below', label: '跌破MA60均线', category: 'ma' }
     ],
-    targetPrice: '',
-    maPeriod1: '5',
-    maPeriod2: '10',
-    notifyMethods: ['app', 'email'],
+    targetValue: '',
     submitting: false,
-    error: '',
-    searching: false
+    error: ''
   },
 
-  onStockCodeInput: debounce(function(e) {
-    const value = e.detail.value.replace(/\D/g, '').slice(0, 6)
-    this.setData({
-      stockCode: value,
-      stockName: '',
-      error: ''
-    }, () => {
-      if (value.length === 6) {
-        this.searchStock(value)
-      }
-    })
-  }, 500),
+  onStockSelect(e) {
+    const stock = e.detail
+    if (!stock) return
 
-  async searchStock(code) {
-    if (this.data.searching) return
-    
-    try {
-      this.setData({ searching: true, error: '' })
-      const res = await get('/stocks/search', { keyword: code })
-      
-      if (res.success && res.data && res.data.length > 0) {
-        const stock = res.data[0]
-        this.setData({
-          stockName: stock.stockName || stock.name || '',
-          market: stock.market || 'sh',
-          searching: false
-        })
-      } else {
-        this.setData({ 
-          searching: false,
-          error: '未找到该股票'
-        })
-      }
-    } catch (err) {
-      this.setData({ 
-        searching: false,
-        error: err.message || '搜索失败'
-      })
-    }
+    this.setData({
+      stockCode: stock.code || stock.stockCode || '',
+      stockName: stock.name || stock.stockName || '',
+      market: stock.market || 'sh'
+    })
   },
 
   onAlertTypeChange(e) {
     const index = e.detail.value
     this.setData({
       alertTypeIndex: index,
-      alertType: this.data.alertTypes[index].value
+      alertType: this.data.alertTypes[index].value,
+      targetValue: ''
     })
   },
 
-  onTargetPriceInput(e) {
-    this.setData({ targetPrice: e.detail.value })
-  },
-
-  onMAPeriod1Input(e) {
-    this.setData({ maPeriod1: e.detail.value })
-  },
-
-  onMAPeriod2Input(e) {
-    this.setData({ maPeriod2: e.detail.value })
-  },
-
-  onNotifyMethodChange(e) {
-    const values = e.detail.value
-    this.setData({ notifyMethods: values })
+  onTargetValueInput(e) {
+    this.setData({ targetValue: e.detail.value })
   },
 
   validateForm() {
-    const { stockCode, stockName, alertType, targetPrice, maPeriod1, maPeriod2 } = this.data
+    const { stockCode, stockName, alertType, targetValue } = this.data
     const errors = []
 
     if (!stockCode || stockCode.length !== 6) {
@@ -101,14 +63,9 @@ Page({
       errors.push('请搜索并选择股票')
     }
 
-    if (alertType === 'price_up' || alertType === 'price_down') {
-      if (!targetPrice || parseFloat(targetPrice) <= 0) {
-        errors.push('请输入有效的目标价格')
-      }
-    } else {
-      if (!maPeriod1 || !maPeriod2) {
-        errors.push('请设置均线周期')
-      }
+    if (!targetValue || parseFloat(targetValue) <= 0) {
+      const typeLabel = this.data.alertTypes.find(t => t.value === alertType)
+      errors.push(`请输入有效的${typeLabel ? typeLabel.label : '目标'}值`)
     }
 
     return errors
@@ -124,23 +81,14 @@ Page({
     try {
       this.setData({ submitting: true, error: '' })
 
-      const { stockCode, stockName, market, alertType, targetPrice, maPeriod1, maPeriod2, notifyMethods } = this.data
-      
+      const { stockCode, stockName, market, alertType, targetValue } = this.data
+
       const alertData = {
         stockCode,
         stockName,
         market,
-        type: alertType,
-        notifyMethods
-      }
-
-      if (alertType === 'price_up' || alertType === 'price_down') {
-        alertData.targetPrice = parseFloat(targetPrice)
-      } else {
-        alertData.maConfig = {
-          period1: parseInt(maPeriod1),
-          period2: parseInt(maPeriod2)
-        }
+        alertType,
+        targetValue: parseFloat(targetValue)
       }
 
       const res = await post('/alerts', alertData)
@@ -159,4 +107,4 @@ Page({
   handleCancel() {
     wx.navigateBack()
   }
-})
+}))

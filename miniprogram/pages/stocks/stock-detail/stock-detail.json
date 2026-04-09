@@ -1,5 +1,7 @@
 {
   "navigationBarTitleText": "股票详情",
   "enablePullDownRefresh": true,
-  "usingComponents": {}
+  "usingComponents": {
+    "loading": "../../../components/loading/loading"
+  }
 }

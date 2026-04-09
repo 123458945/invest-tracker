@@ -9,12 +9,14 @@
     <button class="add-btn" bindtap="openAddDialog" size="mini">添加提醒</button>
   </view>
 
-  <view class="error-message" wx:if="{{error}}">
-    {{error}}
-  </view>
+  <!-- 加载骨架屏 -->
+  <loading show="{{loading}}" skeleton="{{true}}" skeletonType="list" skeletonRows="{{4}}" wx:if="{{loading}}" />
+
+  <!-- 错误 -->
+  <empty-state wx:elif="{{error}}" type="error" text="{{error}}" showAction="{{true}}" actionText="重新加载" bind:action="fetchAlerts" />
 
   <!-- 提醒列表 -->
-  <view class="alerts-list" wx:if="{{alerts.length > 0}}">
+  <view class="alerts-list" wx:elif="{{alerts.length > 0}}">
     <view class="alert-item {{item.isTriggered ? 'triggered' : ''}} {{!item.isActive ? 'inactive' : ''}}" wx:for="{{alerts}}" wx:key="_id">
       <view class="alert-header">
         <view class="alert-info">
@@ -31,7 +33,7 @@
       <view class="alert-details">
         <view class="detail-row">
           <text class="detail-label">提醒类型</text>
-          <text class="detail-value">{{item.alertType === 'price_above' ? '价格高于' : '价格低于'}} ¥{{item.targetPrice}}</text>
+          <text class="detail-value">{{item.typeName}}{{item.targetText ? ' ' + item.targetText : ''}}</text>
         </view>
         <view class="detail-row">
           <text class="detail-label">当前价格</text>
@@ -54,14 +56,5 @@
   </view>
 
   <!-- 空状态 -->
-  <view class="empty-state" wx:if="{{!loading && alerts.length === 0}}">
-    <view class="empty-icon">🔔</view>
-    <view class="empty-text">暂无价格提醒</view>
-    <button class="empty-action" bindtap="openAddDialog">添加提醒</button>
-  </view>
-
-  <!-- 加载状态 -->
-  <view class="loading" wx:if="{{loading}}">
-    <text>加载中...</text>
-  </view>
+  <empty-state wx:else type="empty" text="暂无价格提醒" showAction="{{true}}" actionText="添加提醒" bind:action="openAddDialog" />
 </view>

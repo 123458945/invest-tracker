@@ -2,31 +2,37 @@
 const { get, post, put, del } = require('../../utils/request.js')
 
 const { showToast } = require('../../utils/toast.js')
+const { isLoggedIn, withLogin } = require('../../utils/auth.js')
 
-Page({
+Page(withLogin({
   data: {
     alerts: [],
     loading: true,
     error: '',
     activeCount: 0,
-    triggeredCount: 0
-  },
-
-  onLoad() {
-    this.checkLogin()
-  },
-
-  onShow() {
-    if (getApp().globalData.token) {
-      this.fetchAlerts()
+    triggeredCount: 0,
+    alertTypeNames: {
+      'price_above': '价格高于',
+      'price_below': '价格低于',
+      'change_above': '涨幅高于',
+      'change_below': '跌幅低于',
+      'ma5_above': '突破MA5',
+      'ma5_below': '跌破MA5',
+      'ma10_above': '突破MA10',
+      'ma10_below': '跌破MA10',
+      'ma20_above': '突破MA20',
+      'ma20_below': '跌破MA20',
+      'ma60_above': '突破MA60',
+      'ma60_below': '跌破MA60'
     }
   },
 
-  checkLogin() {
-    const app = getApp()
-    if (!app.globalData.token) {
-      wx.redirectTo({ url: '/pages/login/login' })
-      return
+  onLoad() {
+  },
+
+  onShow() {
+    if (isLoggedIn()) {
+      this.fetchAlerts()
     }
   },
 
@@ -38,8 +44,21 @@ Page({
       const activeCount = alerts.filter(a => a.isActive && !a.isTriggered).length
       const triggeredCount = alerts.filter(a => a.isTriggered).length
 
+      // 为每条提醒附加类型显示文本和目标值格式化
+      const alertTypeNames = this.data.alertTypeNames
+      const formattedAlerts = alerts.map(a => {
+        const typeName = alertTypeNames[a.alertType] || a.alertType
+        let targetText = ''
+        if (a.alertType && a.alertType.indexOf('change') > -1) {
+          targetText = a.targetValue ? `${a.targetValue}%` : ''
+        } else if (a.alertType && a.alertType.indexOf('price') > -1) {
+          targetText = a.targetValue ? `¥${a.targetValue}` : ''
+        }
+        return { ...a, typeName, targetText }
+      })
+
       this.setData({
-        alerts,
+        alerts: formattedAlerts,
         activeCount,
         triggeredCount,
         loading: false
@@ -102,4 +121,4 @@ Page({
       wx.stopPullDownRefresh()
     })
   }
-})
+}))
